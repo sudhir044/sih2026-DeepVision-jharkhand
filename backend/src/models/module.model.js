@@ -1,22 +1,29 @@
-const modules = [
-  {
-    id: "FIRE_01",
-    title: "Fire & Explosion Response",
-    description: "Learn how to respond safely to industrial fire emergencies.",
-    language: ["English", "Hindi"],
-    duration: 10,
-    difficulty: "Beginner",
-    status: "available",
-  },
-  {
-    id: "GAS_01",
-    title: "Gas Leak & Confined Space Protocol",
-    description: "Learn safe procedures for gas leaks and confined spaces.",
-    language: ["English", "Hindi"],
-    duration: 10,
-    difficulty: "Intermediate",
-    status: "available",
-  },
-];
+import sql from "../config/db.js";
 
-export default modules;
+export const getModules = async (req, res) => {
+  try {
+    const modules = await sql`
+      SELECT 
+        id,
+        title,
+        description,
+        duration,
+        difficulty,
+        status
+      FROM training_modules
+      ORDER BY created_at ASC
+    `;
+
+    res.status(200).json({
+      success: true,
+      modules,
+    });
+  } catch (error) {
+    console.error("Error fetching modules:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch training modules",
+    });
+  }
+};
