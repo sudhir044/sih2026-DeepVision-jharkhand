@@ -21,13 +21,20 @@ export const initializeDatabase = async () => {
     await sql`
       CREATE TABLE IF NOT EXISTS training_modules (
         id SERIAL PRIMARY KEY,
+        code VARCHAR(50) UNIQUE,
         title VARCHAR(255) NOT NULL,
         description TEXT,
         duration VARCHAR(50),
         difficulty VARCHAR(50),
-        status VARCHAR(50) DEFAULT 'active',
+        status VARCHAR(50) DEFAULT 'available',
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+    `;
+
+    // Ensure code column exists if table was created previously
+    await sql`
+      ALTER TABLE training_modules 
+      ADD COLUMN IF NOT EXISTS code VARCHAR(50) UNIQUE;
     `;
     console.log("✓ 'training_modules' table ready");
 
@@ -48,38 +55,59 @@ export const initializeDatabase = async () => {
     `;
     console.log("✓ 'training_results' table ready");
 
-    // Check if training modules already exist
-    const existingModules = await sql`SELECT COUNT(*) as count FROM training_modules`;
-    if (parseInt(existingModules[0].count, 10) === 0) {
+    // 4. Create certificates table
+    await sql`
+      CREATE TABLE IF NOT EXISTS certificates (
+        id SERIAL PRIMARY KEY,
+        certificate_id VARCHAR(100) UNIQUE NOT NULL,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        module_id INTEGER REFERENCES training_modules(id) ON DELETE CASCADE,
+        score INTEGER NOT NULL,
+        verification_hash VARCHAR(255) NOT NULL,
+        issued_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    console.log("✓ 'certificates' table ready");
+
+    // Ensure module codes and default modules
+    const existingModules = await sql`SELECT id, title, code FROM training_modules ORDER BY id ASC`;
+    if (existingModules.length === 0) {
       console.log("Seeding default training modules...");
       await sql`
-        INSERT INTO training_modules (title, description, duration, difficulty, status)
+        INSERT INTO training_modules (code, title, description, duration, difficulty, status)
         VALUES 
         (
+          'FIRE_01',
           'Fire & Explosion Response',
           'AR-based industrial hazard detection, fire extinguisher selection (PASS technique), and emergency evacuation protocols.',
           '15 mins',
           'Intermediate',
-          'active'
+          'available'
         ),
         (
+          'GAS_01',
           'Gas Leak & Confined Space Safety',
           'Atmospheric hazard identification, toxic gas detection, proper PPE donning, buddy-system, and rapid extraction.',
           '20 mins',
           'Advanced',
-          'active'
+          'available'
         ),
         (
+          'MINE_01',
           'Mining Machinery & Proximity Awareness',
           'Heavy earth-moving machinery blind spot navigation, lockout-tagout (LOTO) basics, and conveyor safety.',
           '10 mins',
           'Beginner',
-          'active'
+          'available'
         );
       `;
       console.log("✓ Seeded 3 default training modules");
     } else {
-      console.log(`ℹ Found ${existingModules[0].count} existing training modules`);
+      // Update codes if missing
+      await sql`UPDATE training_modules SET code = 'FIRE_01', status = 'available' WHERE id = 1 AND (code IS NULL OR code != 'FIRE_01')`;
+      await sql`UPDATE training_modules SET code = 'GAS_01', status = 'available' WHERE id = 2 AND (code IS NULL OR code != 'GAS_01')`;
+      await sql`UPDATE training_modules SET code = 'MINE_01', status = 'available' WHERE id = 3 AND (code IS NULL OR code != 'MINE_01')`;
+      console.log("✓ Updated module codes ('FIRE_01', 'GAS_01', 'MINE_01') and status to 'available'");
     }
 
     console.log("Database initialized successfully!");

@@ -1,3 +1,6 @@
+import crypto from "crypto";
+import sql from "../config/db.js";
+
 export const createCertificate = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -10,12 +13,28 @@ export const createCertificate = async (req, res) => {
       });
     }
 
+    // Resolve moduleId if code passed (e.g., 'FIRE_01')
+    let numericModuleId = moduleId;
+    if (typeof moduleId === "string" && !/^\d+$/.test(moduleId)) {
+      const mod = await sql`SELECT id FROM training_modules WHERE code = ${moduleId}`;
+      if (mod.length > 0) {
+        numericModuleId = mod[0].id;
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "Training module not found",
+        });
+      }
+    } else {
+      numericModuleId = parseInt(moduleId, 10);
+    }
+
     // Get the latest training result from the database
     const results = await sql`
       SELECT id, score, status
       FROM training_results
       WHERE user_id = ${userId}
-        AND module_id = ${moduleId}
+        AND module_id = ${numericModuleId}
       ORDER BY completed_at DESC
       LIMIT 1
     `;
@@ -42,7 +61,7 @@ export const createCertificate = async (req, res) => {
       SELECT *
       FROM certificates
       WHERE user_id = ${userId}
-        AND module_id = ${moduleId}
+        AND module_id = ${numericModuleId}
     `;
 
     if (existingCertificate.length > 0) {
@@ -60,7 +79,7 @@ export const createCertificate = async (req, res) => {
     const certificateData = {
       certificateId,
       userId,
-      moduleId,
+      moduleId: numericModuleId,
       score: trainingResult.score,
     };
 
@@ -81,7 +100,7 @@ export const createCertificate = async (req, res) => {
       VALUES (
         ${certificateId},
         ${userId},
-        ${moduleId},
+        ${numericModuleId},
         ${trainingResult.score},
         ${verificationHash}
       )
@@ -99,6 +118,51 @@ export const createCertificate = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to create certificate",
+    });
+  }
+};
+
+export const verifyCertificate = async (req, res) => {
+  try {
+    const certParam = req.params.certificateId || req.params.id;
+
+    const results = await sql`
+      SELECT 
+        c.id,
+        c.certificate_id,
+        c.user_id,
+        u.name AS worker_name,
+        u.email AS worker_email,
+        c.module_id,
+        tm.title AS module_title,
+        tm.code AS module_code,
+        c.score,
+        c.verification_hash,
+        c.issued_at
+      FROM certificates c
+      INNER JOIN users u ON c.user_id = u.id
+      INNER JOIN training_modules tm ON c.module_id = tm.id
+      WHERE c.certificate_id = ${certParam}
+         OR c.id::text = ${certParam}
+    `;
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Certificate not found or invalid",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      certificate: results[0],
+    });
+  } catch (error) {
+    console.error("Verify certificate error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to verify certificate",
     });
   }
 };

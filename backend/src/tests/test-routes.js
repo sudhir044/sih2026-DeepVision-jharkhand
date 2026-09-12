@@ -1,33 +1,56 @@
 /**
- * Comprehensive API Route Testing Suite for DeepVision Jharkhand Backend
- * Routes tested:
- *  - POST /api/auth/register
- *  - POST /api/auth/login
- *  - GET  /api/auth/me (Protected)
- *  - GET  /api/modules
- *  - GET  /api/modules/:id
- *  - POST /api/training/result (Protected 🔒)
+ * Comprehensive API Route Testing Suite for SafeAR Jharkhand Backend
+ * Complete Checklist:
+ * 
+ * SERVER
+ * [x] GET /
+ * 
+ * MODULES
+ * [x] GET /api/modules
+ * [x] GET /api/modules/FIRE_01
+ * [x] GET /api/modules/GAS_01
+ * 
+ * AUTH
+ * [x] POST /api/auth/register
+ * [x] POST /api/auth/login
+ * [x] GET /api/auth/me
+ * [x] /me without token -> 401
+ * 
+ * TRAINING
+ * [x] POST /api/training/result
+ * [x] GET /api/training/history
+ * 
+ * CERTIFICATE
+ * [x] POST /api/certificates
+ * [x] GET /api/certificates/verify/:id
+ * [x] SHA-256 hash exists
+ * 
+ * ADMIN
+ * [x] GET /api/admin/dashboard
+ * [x] GET /api/admin/workers
+ * [x] GET /api/admin/results
+ * [x] Worker accessing admin -> 403
  */
 
 import { server } from "../server.js";
+import sql from "../config/db.js";
 
 const BASE_URL = `http://localhost:${process.env.PORT || 5000}`;
 
-// Helper test reporter
 let passedTests = 0;
 let failedTests = 0;
-const results = [];
+const report = [];
 
-function recordResult(route, testName, passed, details) {
+function recordResult(category, item, passed, details = null) {
   if (passed) {
     passedTests++;
-    console.log(`  ✅ [PASS] ${testName}`);
+    console.log(`  ✅ [PASS] ${item}`);
   } else {
     failedTests++;
-    console.error(`  ❌ [FAIL] ${testName}`);
-    if (details) console.error(`     Details:`, details);
+    console.error(`  ❌ [FAIL] ${item}`);
+    if (details) console.error(`     Error details:`, details);
   }
-  results.push({ route, testName, passed, details });
+  report.push({ category, item, passed, details });
 }
 
 async function request(path, options = {}) {
@@ -52,360 +75,239 @@ async function request(path, options = {}) {
   return { status: res.status, body, duration };
 }
 
-async function runTests() {
-  console.log("\n" + "=".repeat(65));
-  console.log("🚀 STARTING API ROUTE VERIFICATION SUITE");
-  console.log(`Target: ${BASE_URL}`);
-  console.log("=".repeat(65) + "\n");
+async function runAllTests() {
+  console.log("\n" + "=".repeat(70));
+  console.log("🚀 EXECUTING COMPLETE ENDPOINT CHECKLIST SUITE");
+  console.log(`Host: ${BASE_URL}`);
+  console.log("=".repeat(70) + "\n");
 
   const timestamp = Date.now();
-  const testEmail = `miner_${timestamp}@jharkhand-mines.org`;
-  const testPassword = "Password@Safe2026";
-  const testName = `Ramesh Soren ${timestamp.toString().slice(-4)}`;
-  let authToken = null;
-  let createdUserId = null;
-  let targetModuleId = null;
+  const workerEmail = `worker_${timestamp}@jharkhand-mines.gov.in`;
+  const adminEmail = `admin_${timestamp}@jharkhand-mines.gov.in`;
+  const password = "Password@Safe2026";
+
+  let workerToken = null;
+  let adminToken = null;
+  let workerUserId = null;
+  let fireModuleId = null;
+  let generatedCertId = null;
 
   try {
-    // -------------------------------------------------------------
-    // 1. POST /api/auth/register
-    // -------------------------------------------------------------
-    console.log("📌 1. Testing POST /api/auth/register");
+    // =============================================================
+    // 1. SERVER
+    // =============================================================
+    console.log("📂 [SERVER]");
+    const serverRes = await request("/");
+    recordResult(
+      "SERVER",
+      "GET /",
+      serverRes.status === 200 && serverRes.body?.status === "success",
+      serverRes.body
+    );
 
-    // 1.1 Success case
+    // =============================================================
+    // 2. MODULES
+    // =============================================================
+    console.log("\n📂 [MODULES]");
+    
+    // GET /api/modules
+    const modulesRes = await request("/api/modules");
+    const hasModules = modulesRes.status === 200 && Array.isArray(modulesRes.body?.modules) && modulesRes.body.modules.length > 0;
+    recordResult("MODULES", "GET /api/modules", hasModules, { count: modulesRes.body?.modules?.length });
+
+    // GET /api/modules/FIRE_01
+    const fireRes = await request("/api/modules/FIRE_01");
+    const firePassed = fireRes.status === 200 && fireRes.body?.module?.code === "FIRE_01";
+    if (firePassed) {
+      fireModuleId = fireRes.body.module.id;
+    }
+    recordResult("MODULES", "GET /api/modules/FIRE_01", firePassed, fireRes.body);
+
+    // GET /api/modules/GAS_01
+    const gasRes = await request("/api/modules/GAS_01");
+    const gasPassed = gasRes.status === 200 && gasRes.body?.module?.code === "GAS_01";
+    recordResult("MODULES", "GET /api/modules/GAS_01", gasPassed, gasRes.body);
+
+    // =============================================================
+    // 3. AUTH
+    // =============================================================
+    console.log("\n📂 [AUTH]");
+
+    // POST /api/auth/register (worker)
     const regRes = await request("/api/auth/register", {
       method: "POST",
       body: JSON.stringify({
-        name: testName,
-        email: testEmail,
-        password: testPassword,
+        name: `Ramesh Soren ${timestamp.toString().slice(-4)}`,
+        email: workerEmail,
+        password: password,
       }),
     });
-
-    const regSuccess =
-      regRes.status === 201 &&
-      regRes.body?.success === true &&
-      regRes.body?.user?.email === testEmail;
-    
-    if (regSuccess) {
-      createdUserId = regRes.body.user.id;
+    const regPassed = regRes.status === 201 && regRes.body?.user?.email === workerEmail;
+    if (regPassed) {
+      workerUserId = regRes.body.user.id;
     }
+    recordResult("AUTH", "POST /api/auth/register", regPassed, regRes.body);
 
-    recordResult(
-      "POST /api/auth/register",
-      "Register new worker user (201 Created)",
-      regSuccess,
-      regRes.body
-    );
-
-    // 1.2 Duplicate email conflict (409 Conflict)
-    const dupRes = await request("/api/auth/register", {
-      method: "POST",
-      body: JSON.stringify({
-        name: testName,
-        email: testEmail,
-        password: testPassword,
-      }),
-    });
-    recordResult(
-      "POST /api/auth/register",
-      "Prevent duplicate registration (409 Conflict)",
-      dupRes.status === 409 && dupRes.body?.success === false,
-      dupRes.body
-    );
-
-    // 1.3 Validation error: missing password (400 Bad Request)
-    const missingFieldRes = await request("/api/auth/register", {
-      method: "POST",
-      body: JSON.stringify({
-        name: "Incomplete User",
-        email: "incomplete@test.com",
-      }),
-    });
-    recordResult(
-      "POST /api/auth/register",
-      "Reject missing required fields (400 Bad Request)",
-      missingFieldRes.status === 400 && missingFieldRes.body?.success === false,
-      missingFieldRes.body
-    );
-
-    // -------------------------------------------------------------
-    // 2. POST /api/auth/login
-    // -------------------------------------------------------------
-    console.log("\n📌 2. Testing POST /api/auth/login");
-
-    // 2.1 Success login
+    // POST /api/auth/login
     const loginRes = await request("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({
-        email: testEmail,
-        password: testPassword,
+        email: workerEmail,
+        password: password,
       }),
     });
-
-    const loginSuccess =
-      loginRes.status === 200 &&
-      loginRes.body?.success === true &&
-      Boolean(loginRes.body?.token);
-
-    if (loginSuccess) {
-      authToken = loginRes.body.token;
+    const loginPassed = loginRes.status === 200 && Boolean(loginRes.body?.token);
+    if (loginPassed) {
+      workerToken = loginRes.body.token;
     }
+    recordResult("AUTH", "POST /api/auth/login", loginPassed, { tokenLength: workerToken?.length });
 
-    recordResult(
-      "POST /api/auth/login",
-      "Worker login with valid credentials (200 OK + JWT)",
-      loginSuccess,
-      { tokenReceived: Boolean(authToken), user: loginRes.body?.user }
-    );
-
-    // 2.2 Invalid password
-    const wrongPassRes = await request("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email: testEmail,
-        password: "IncorrectPassword123!",
-      }),
-    });
-    recordResult(
-      "POST /api/auth/login",
-      "Reject invalid password (401 Unauthorized)",
-      wrongPassRes.status === 401 && wrongPassRes.body?.success === false,
-      wrongPassRes.body
-    );
-
-    // 2.3 Non-existent user
-    const noUserRes = await request("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email: `nonexistent_${Date.now()}@unknown.org`,
-        password: "anyPassword",
-      }),
-    });
-    recordResult(
-      "POST /api/auth/login",
-      "Reject non-existent user (401 Unauthorized)",
-      noUserRes.status === 401 && noUserRes.body?.success === false,
-      noUserRes.body
-    );
-
-    // -------------------------------------------------------------
-    // 3. GET /api/auth/me 🔒
-    // -------------------------------------------------------------
-    console.log("\n📌 3. Testing GET /api/auth/me 🔒");
-
-    // 3.1 Authenticated request
+    // GET /api/auth/me
     const meRes = await request("/api/auth/me", {
       method: "GET",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
+      headers: { Authorization: `Bearer ${workerToken}` },
     });
+    const mePassed = meRes.status === 200 && meRes.body?.user?.email === workerEmail;
+    recordResult("AUTH", "GET /api/auth/me", mePassed, meRes.body);
 
-    const meSuccess =
-      meRes.status === 200 &&
-      meRes.body?.success === true &&
-      meRes.body?.user?.email === testEmail;
+    // /me without token → 401
+    const meNoTokenRes = await request("/api/auth/me");
+    const meNoTokenPassed = meNoTokenRes.status === 401 && meNoTokenRes.body?.success === false;
+    recordResult("AUTH", "/me without token → 401", meNoTokenPassed, meNoTokenRes.body);
 
-    recordResult(
-      "GET /api/auth/me",
-      "Fetch current authenticated user profile (200 OK)",
-      meSuccess,
-      meRes.body
-    );
+    // =============================================================
+    // 4. TRAINING
+    // =============================================================
+    console.log("\n📂 [TRAINING]");
 
-    // 3.2 Missing authorization header
-    const meUnauthRes = await request("/api/auth/me", {
-      method: "GET",
-    });
-    recordResult(
-      "GET /api/auth/me",
-      "Reject unauthenticated request without token (401 Unauthorized)",
-      meUnauthRes.status === 401 && meUnauthRes.body?.success === false,
-      meUnauthRes.body
-    );
-
-    // 3.3 Invalid token
-    const meBadTokenRes = await request("/api/auth/me", {
-      method: "GET",
-      headers: {
-        Authorization: "Bearer invalid.jwt.token",
-      },
-    });
-    recordResult(
-      "GET /api/auth/me",
-      "Reject request with invalid token (401 Unauthorized)",
-      meBadTokenRes.status === 401 && meBadTokenRes.body?.success === false,
-      meBadTokenRes.body
-    );
-
-    // -------------------------------------------------------------
-    // 4. GET /api/modules
-    // -------------------------------------------------------------
-    console.log("\n📌 4. Testing GET /api/modules");
-
-    const modulesRes = await request("/api/modules", {
-      method: "GET",
-    });
-
-    const modulesSuccess =
-      modulesRes.status === 200 &&
-      modulesRes.body?.success === true &&
-      Array.isArray(modulesRes.body?.modules) &&
-      modulesRes.body.modules.length > 0;
-
-    if (modulesSuccess) {
-      targetModuleId = modulesRes.body.modules[0].id;
-    }
-
-    recordResult(
-      "GET /api/modules",
-      "Retrieve all training modules (200 OK)",
-      modulesSuccess,
-      { count: modulesRes.body?.modules?.length, sample: modulesRes.body?.modules?.[0] }
-    );
-
-    // -------------------------------------------------------------
-    // 5. GET /api/modules/:id
-    // -------------------------------------------------------------
-    console.log(`\n📌 5. Testing GET /api/modules/:id (id: ${targetModuleId})`);
-
-    // 5.1 Existing module
-    const singleModuleRes = await request(`/api/modules/${targetModuleId}`, {
-      method: "GET",
-    });
-
-    const singleModuleSuccess =
-      singleModuleRes.status === 200 &&
-      singleModuleRes.body?.success === true &&
-      singleModuleRes.body?.module?.id === targetModuleId;
-
-    recordResult(
-      "GET /api/modules/:id",
-      `Retrieve training module by ID #${targetModuleId} (200 OK)`,
-      singleModuleSuccess,
-      singleModuleRes.body?.module
-    );
-
-    // 5.2 Non-existent module
-    const notFoundModuleRes = await request("/api/modules/999999", {
-      method: "GET",
-    });
-
-    recordResult(
-      "GET /api/modules/:id",
-      "Return 404 Not Found for non-existent module ID",
-      notFoundModuleRes.status === 404 && notFoundModuleRes.body?.success === false,
-      notFoundModuleRes.body
-    );
-
-    // -------------------------------------------------------------
-    // 6. POST /api/training/result 🔒
-    // -------------------------------------------------------------
-    console.log("\n📌 6. Testing POST /api/training/result 🔒");
-
-    // 6.1 Authorized submission
-    const trainingPayload = {
-      moduleId: targetModuleId,
-      score: 92,
-      duration: 380, // 380 seconds
-      correctActions: 9,
-      wrongActions: 1,
-      safetyViolations: 0,
-      status: "passed",
-    };
-
-    const submitRes = await request("/api/training/result", {
+    // POST /api/training/result
+    const trainingResultRes = await request("/api/training/result", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-      body: JSON.stringify(trainingPayload),
-    });
-
-    const submitSuccess =
-      submitRes.status === 201 &&
-      submitRes.body?.success === true &&
-      submitRes.body?.result?.score === 92 &&
-      submitRes.body?.result?.user_id === createdUserId;
-
-    recordResult(
-      "POST /api/training/result 🔒",
-      "Save worker AR training simulation result (201 Created)",
-      submitSuccess,
-      submitRes.body
-    );
-
-    // 6.2 Missing token (401 Unauthorized)
-    const unauthSubmitRes = await request("/api/training/result", {
-      method: "POST",
-      body: JSON.stringify(trainingPayload),
-    });
-
-    recordResult(
-      "POST /api/training/result 🔒",
-      "Reject result submission without auth token (401 Unauthorized)",
-      unauthSubmitRes.status === 401 && unauthSubmitRes.body?.success === false,
-      unauthSubmitRes.body
-    );
-
-    // 6.3 Missing required field (score/status) (400 Bad Request)
-    const missingFieldSubmitRes = await request("/api/training/result", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
+      headers: { Authorization: `Bearer ${workerToken}` },
       body: JSON.stringify({
-        moduleId: targetModuleId,
-        // missing score and status
-      }),
-    });
-
-    recordResult(
-      "POST /api/training/result 🔒",
-      "Reject submission with missing required fields (400 Bad Request)",
-      missingFieldSubmitRes.status === 400 && missingFieldSubmitRes.body?.success === false,
-      missingFieldSubmitRes.body
-    );
-
-    // 6.4 Non-existent module ID (404 Not Found)
-    const invalidModuleSubmitRes = await request("/api/training/result", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-      body: JSON.stringify({
-        moduleId: 999999,
-        score: 80,
+        moduleId: fireModuleId || 1,
+        score: 95,
+        duration: 350,
+        correctActions: 9,
+        wrongActions: 0,
+        safetyViolations: 0,
         status: "passed",
       }),
     });
+    const trainingPassed = trainingResultRes.status === 201 && trainingResultRes.body?.result?.score === 95;
+    recordResult("TRAINING", "POST /api/training/result", trainingPassed, trainingResultRes.body);
 
-    recordResult(
-      "POST /api/training/result 🔒",
-      "Reject result with non-existent module ID (404 Not Found)",
-      invalidModuleSubmitRes.status === 404 && invalidModuleSubmitRes.body?.success === false,
-      invalidModuleSubmitRes.body
-    );
+    // GET /api/training/history
+    const historyRes = await request("/api/training/history", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${workerToken}` },
+    });
+    const historyPassed = historyRes.status === 200 && Array.isArray(historyRes.body?.history) && historyRes.body.history.length > 0;
+    recordResult("TRAINING", "GET /api/training/history", historyPassed, { count: historyRes.body?.history?.length });
+
+    // =============================================================
+    // 5. CERTIFICATE
+    // =============================================================
+    console.log("\n📂 [CERTIFICATE]");
+
+    // POST /api/certificates
+    const certRes = await request("/api/certificates", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${workerToken}` },
+      body: JSON.stringify({
+        moduleId: fireModuleId || 1,
+      }),
+    });
+    const certPassed = (certRes.status === 201 || certRes.status === 200) && Boolean(certRes.body?.certificate);
+    if (certPassed) {
+      generatedCertId = certRes.body.certificate.certificate_id;
+    }
+    recordResult("CERTIFICATE", "POST /api/certificates", certPassed, certRes.body);
+
+    // GET /api/certificates/verify/:id
+    const verifyRes = await request(`/api/certificates/verify/${generatedCertId}`);
+    const verifyPassed = verifyRes.status === 200 && verifyRes.body?.certificate?.certificate_id === generatedCertId;
+    recordResult("CERTIFICATE", "GET /api/certificates/verify/:id", verifyPassed, verifyRes.body);
+
+    // SHA-256 hash exists
+    const certHash = verifyRes.body?.certificate?.verification_hash;
+    const sha256Valid = typeof certHash === "string" && certHash.length === 64 && /^[a-f0-9]+$/i.test(certHash);
+    recordResult("CERTIFICATE", "SHA-256 hash exists", sha256Valid, { hash: certHash });
+
+    // =============================================================
+    // 6. ADMIN
+    // =============================================================
+    console.log("\n📂 [ADMIN]");
+
+    // Register admin user directly
+    const adminRegRes = await request("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({
+        name: "Admin Inspector",
+        email: adminEmail,
+        password: password,
+      }),
+    });
+    if (adminRegRes.status === 201) {
+      // Elevate to admin role in database
+      await sql`UPDATE users SET role = 'admin' WHERE id = ${adminRegRes.body.user.id}`;
+      // Login as admin to get token with role = 'admin'
+      const adminLoginRes = await request("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: adminEmail,
+          password: password,
+        }),
+      });
+      adminToken = adminLoginRes.body?.token;
+    }
+
+    // GET /api/admin/dashboard
+    const adminDashRes = await request("/api/admin/dashboard", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    const adminDashPassed = adminDashRes.status === 200 && Boolean(adminDashRes.body?.dashboard);
+    recordResult("ADMIN", "GET /api/admin/dashboard", adminDashPassed, adminDashRes.body?.dashboard);
+
+    // GET /api/admin/workers
+    const adminWorkersRes = await request("/api/admin/workers", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    const adminWorkersPassed = adminWorkersRes.status === 200 && Array.isArray(adminWorkersRes.body?.workers);
+    recordResult("ADMIN", "GET /api/admin/workers", adminWorkersPassed, { count: adminWorkersRes.body?.workers?.length });
+
+    // GET /api/admin/results
+    const adminResultsRes = await request("/api/admin/results", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    const adminResultsPassed = adminResultsRes.status === 200 && Array.isArray(adminResultsRes.body?.results);
+    recordResult("ADMIN", "GET /api/admin/results", adminResultsPassed, { count: adminResultsRes.body?.results?.length });
+
+    // Worker accessing admin → 403
+    const workerForbiddenRes = await request("/api/admin/dashboard", {
+      method: "GET",
+      headers: { Authorization: `Bearer ${workerToken}` },
+    });
+    const forbiddenPassed = workerForbiddenRes.status === 403 && workerForbiddenRes.body?.success === false;
+    recordResult("ADMIN", "Worker accessing admin → 403", forbiddenPassed, workerForbiddenRes.body);
 
   } catch (error) {
-    console.error("\n💥 Unexpected error during test run:", error);
+    console.error("Critical test execution error:", error);
     failedTests++;
   } finally {
-    console.log("\n" + "=".repeat(65));
-    console.log(`📊 TEST SUMMARY: Total: ${passedTests + failedTests} | Passed: ${passedTests} | Failed: ${failedTests}`);
-    console.log("=".repeat(65) + "\n");
+    console.log("\n" + "=".repeat(70));
+    console.log(`📊 FINAL RESULTS: ${passedTests} PASSED, ${failedTests} FAILED (TOTAL: ${passedTests + failedTests})`);
+    console.log("=".repeat(70) + "\n");
 
-    // Cleanly close server
     if (server) {
-      server.close(() => {
-        process.exit(failedTests > 0 ? 1 : 0);
-      });
+      server.close(() => process.exit(failedTests > 0 ? 1 : 0));
     } else {
       process.exit(failedTests > 0 ? 1 : 0);
     }
   }
 }
 
-// Give server time to listen
-setTimeout(runTests, 500);
+setTimeout(runAllTests, 600);

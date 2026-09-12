@@ -5,13 +5,14 @@ export const getModules = async (req, res) => {
     const modules = await sql`
       SELECT 
         id,
+        code,
         title,
         description,
         duration,
         difficulty,
         status
       FROM training_modules
-      ORDER BY created_at ASC
+      ORDER BY id ASC
     `;
 
     res.status(200).json({
@@ -31,17 +32,19 @@ export const getModules = async (req, res) => {
 export const getModuleById = async (req, res) => {
   try {
     const { id } = req.params;
+    const isNumeric = /^\d+$/.test(id);
 
     const result = await sql`
       SELECT 
         id,
+        code,
         title,
         description,
         duration,
         difficulty,
         status
       FROM training_modules
-      WHERE id = ${id}
+      WHERE ${isNumeric ? sql`id = ${parseInt(id, 10)}` : sql`code = ${id}`}
     `;
 
     if (result.length === 0) {
