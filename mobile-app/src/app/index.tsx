@@ -1,7 +1,17 @@
 import { StyleSheet, Text, TextInput, TouchableOpacity, View, } from "react-native";
 import { router } from "expo-router";
+import { useState } from "react";
+import { Alert } from "react-native";
+import { login } from "../services/auth";
+
+
 
 export default function LoginScreen() {
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
@@ -17,8 +27,12 @@ export default function LoginScreen() {
         <Text style={styles.label}>Employee ID</Text>
         <TextInput
           style={styles.input}
-          placeholder="Enter Employee ID"
+          placeholder="Enter Email"
           placeholderTextColor="#777"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
         />
 
         <Text style={styles.label}>Password</Text>
@@ -27,13 +41,43 @@ export default function LoginScreen() {
           placeholder="Enter Password"
           placeholderTextColor="#777"
           secureTextEntry
+          value={password}
+          onChangeText={setPassword}
         />
 
         <TouchableOpacity
           style={styles.loginButton}
-          onPress={() => router.push("/home")}
+          disabled={loading}
+          onPress={async () => {
+            if (!email || !password) {
+              Alert.alert(
+                "Missing Details",
+                "Please enter email and password."
+              );
+              return;
+            }
+
+            try {
+              setLoading(true);
+
+              await login(email, password);
+
+              router.replace("/home");
+            } catch (error) {
+              Alert.alert(
+                "Login Failed",
+                error instanceof Error
+                  ? error.message
+                  : "Unable to login."
+              );
+            } finally {
+              setLoading(false);
+            }
+          }}
         >
-          <Text style={styles.loginText}>LOGIN</Text>
+          <Text style={styles.loginText}>
+            {loading ? "LOGGING IN..." : "LOGIN"}
+          </Text>
         </TouchableOpacity>
       </View>
 
