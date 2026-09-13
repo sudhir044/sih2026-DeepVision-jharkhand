@@ -4,34 +4,58 @@ import {
   View,
   Text,
   Animated,
-  TouchableOpacity,
   SafeAreaView,
   StatusBar,
+  Dimensions,
 } from 'react-native';
 import { colors } from '../theme/colors';
 
+const { width } = Dimensions.get('window');
+
 export default function SplashScreen({ onNext }) {
-  const progressAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: 0.5,
-      duration: 1200,
-      useNativeDriver: false,
-    }).start();
+    // Sequence: Fade in & scale up, hold, then transition
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 4,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]),
+      Animated.delay(1000), // Hold for 1 second
+    ]).start(() => {
+      // Auto transition to next screen
+      if (onNext) onNext();
+    });
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={colors.darkBg} />
-      <TouchableOpacity
-        activeOpacity={0.9}
-        style={styles.touchableArea}
-        onPress={onNext}
-      >
-        <View style={styles.content}>
-          {/* Orange Circular Logo */}
-          <View style={styles.logoCircle} />
+      <View style={styles.content}>
+        <Animated.View
+          style={[
+            styles.logoContainer,
+            {
+              opacity: opacityAnim,
+              transform: [{ scale: scaleAnim }],
+            },
+          ]}
+        >
+          {/* Main Logo Element */}
+          <View style={styles.logoCircle}>
+            <View style={styles.innerCircle} />
+          </View>
 
           {/* App Title */}
           <Text style={styles.title}>SAFEAR Jharkhand</Text>
@@ -40,23 +64,8 @@ export default function SplashScreen({ onNext }) {
           <Text style={styles.subtitle}>
             AR-Based Vocational Training Simulator
           </Text>
-
-          {/* Progress Bar */}
-          <View style={styles.progressTrack}>
-            <Animated.View
-              style={[
-                styles.progressFill,
-                {
-                  width: progressAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0%', '100%'],
-                  }),
-                },
-              ]}
-            />
-          </View>
-        </View>
-      </TouchableOpacity>
+        </Animated.View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -66,47 +75,49 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.darkBg,
   },
-  touchableArea: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   content: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
+  logoContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   logoCircle: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
-    backgroundColor: colors.primary,
-    marginBottom: 28,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(235, 90, 12, 0.15)', // Light transparent orange
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 30,
+  },
+  innerCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.primary, // Solid orange
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    elevation: 10,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
+    fontSize: 28,
+    fontWeight: '800',
     color: colors.white,
-    letterSpacing: 0.3,
-    marginBottom: 10,
+    letterSpacing: 0.5,
+    marginBottom: 12,
     textAlign: 'center',
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.textLightMuted,
     textAlign: 'center',
-    marginBottom: 20,
-  },
-  progressTrack: {
-    width: 180,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.progressBarBg,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 2,
+    fontWeight: '500',
+    opacity: 0.8,
   },
 });
