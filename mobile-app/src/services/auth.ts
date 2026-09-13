@@ -3,10 +3,7 @@ import { apiRequest } from "./api";
 
 const TOKEN_KEY = "deepvision_token";
 
-export async function login(
-    email: string,
-    password: string
-) {
+export async function login(email: string, password: string) {
     const data = await apiRequest("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({
@@ -15,10 +12,11 @@ export async function login(
         }),
     });
 
-    await SecureStore.setItemAsync(
-        TOKEN_KEY,
-        data.token
-    );
+    if (!data.success || !data.token) {
+        throw new Error(data.message || "Login failed");
+    }
+
+    await SecureStore.setItemAsync(TOKEN_KEY, data.token);
 
     return data;
 }

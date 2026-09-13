@@ -6,11 +6,46 @@ import { login } from "../services/auth";
 
 
 
+
+
+
 export default function LoginScreen() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert(
+        "Missing Details",
+        "Please enter email and password."
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const data = await login(email.trim(), password);
+
+      console.log("LOGIN SUCCESS:", data.user);
+
+      router.replace("/home");
+    } catch (error) {
+      console.error("LOGIN FAILED:", error);
+
+      Alert.alert(
+        "Login Failed",
+        error instanceof Error
+          ? error.message
+          : "Unable to connect to server."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -48,32 +83,7 @@ export default function LoginScreen() {
         <TouchableOpacity
           style={styles.loginButton}
           disabled={loading}
-          onPress={async () => {
-            if (!email || !password) {
-              Alert.alert(
-                "Missing Details",
-                "Please enter email and password."
-              );
-              return;
-            }
-
-            try {
-              setLoading(true);
-
-              await login(email, password);
-
-              router.replace("/home");
-            } catch (error) {
-              Alert.alert(
-                "Login Failed",
-                error instanceof Error
-                  ? error.message
-                  : "Unable to login."
-              );
-            } finally {
-              setLoading(false);
-            }
-          }}
+          onPress={handleLogin}
         >
           <Text style={styles.loginText}>
             {loading ? "LOGGING IN..." : "LOGIN"}

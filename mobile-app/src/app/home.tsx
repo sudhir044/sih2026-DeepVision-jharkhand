@@ -6,8 +6,22 @@ import {
     ScrollView,
 } from "react-native";
 import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { getCurrentUser, logout } from "../services/auth";
 
 export default function HomeScreen() {
+    const [user, setUser] = useState<{ id?: number; name?: string; email?: string } | null>(null);
+
+    useEffect(() => {
+        getCurrentUser()
+            .then((res) => {
+                if (res?.user) {
+                    setUser(res.user);
+                }
+            })
+            .catch(() => {});
+    }, []);
+
     return (
         <View style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -16,11 +30,19 @@ export default function HomeScreen() {
                 <View style={styles.header}>
                     <View>
                         <Text style={styles.greeting}>Welcome back,</Text>
-                        <Text style={styles.name}>Employee</Text>
+                        <Text style={styles.name}>{user?.name || "Employee"}</Text>
                     </View>
 
-                    <TouchableOpacity style={styles.profile}>
-                        <Text style={styles.profileText}>E</Text>
+                    <TouchableOpacity
+                        style={styles.profile}
+                        onPress={async () => {
+                            await logout();
+                            router.replace("/");
+                        }}
+                    >
+                        <Text style={styles.profileText}>
+                            {(user?.name || "E").charAt(0).toUpperCase()}
+                        </Text>
                     </TouchableOpacity>
                 </View>
 
