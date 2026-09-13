@@ -3,6 +3,23 @@ import { apiRequest } from "./api";
 
 const TOKEN_KEY = "deepvision_token";
 
+export async function register(name: string, email: string, password: string) {
+    const data = await apiRequest("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+            name,
+            email,
+            password,
+        }),
+    });
+
+    if (!data.success) {
+        throw new Error(data.message || "Registration failed");
+    }
+
+    return await login(email, password);
+}
+
 export async function login(email: string, password: string) {
     const data = await apiRequest("/api/auth/login", {
         method: "POST",

@@ -8,9 +8,11 @@ import {
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { getCurrentUser, logout } from "../services/auth";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function HomeScreen() {
     const [user, setUser] = useState<{ id?: number; name?: string; email?: string } | null>(null);
+    const { t, language, setLanguage } = useLanguage();
 
     useEffect(() => {
         getCurrentUser()
@@ -19,7 +21,7 @@ export default function HomeScreen() {
                     setUser(res.user);
                 }
             })
-            .catch(() => {});
+            .catch(() => { });
     }, []);
 
     return (
@@ -29,7 +31,7 @@ export default function HomeScreen() {
                 {/* Header */}
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.greeting}>Welcome back,</Text>
+                        <Text style={styles.greeting}>{t.home.greeting},</Text>
                         <Text style={styles.name}>{user?.name || "Employee"}</Text>
                     </View>
 
@@ -46,9 +48,72 @@ export default function HomeScreen() {
                     </TouchableOpacity>
                 </View>
 
+                {/* Language Selector */}
+                <View style={styles.languageRow}>
+                    <Text style={styles.languageLabel}>
+                        {t.home.language}
+                    </Text>
+
+                    <View style={styles.languageSelector}>
+                        <TouchableOpacity
+                            style={[
+                                styles.languageButton,
+                                language === "EN" && styles.languageActive,
+                            ]}
+                            onPress={() => setLanguage("EN")}
+                        >
+                            <Text
+                                style={[
+                                    styles.languageText,
+                                    language === "EN" &&
+                                        styles.languageActiveText,
+                                ]}
+                            >
+                                EN
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[
+                                styles.languageButton,
+                                language === "HI" && styles.languageActive,
+                            ]}
+                            onPress={() => setLanguage("HI")}
+                        >
+                            <Text
+                                style={[
+                                    styles.languageText,
+                                    language === "HI" &&
+                                        styles.languageActiveText,
+                                ]}
+                            >
+                                हिंदी
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[
+                                styles.languageButton,
+                                language === "SAT" && styles.languageActive,
+                            ]}
+                            onPress={() => setLanguage("SAT")}
+                        >
+                            <Text
+                                style={[
+                                    styles.languageText,
+                                    language === "SAT" &&
+                                        styles.languageActiveText,
+                                ]}
+                            >
+                                संताली
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
                 {/* Progress */}
                 <View style={styles.progressCard}>
-                    <Text style={styles.progressTitle}>Training Progress</Text>
+                    <Text style={styles.progressTitle}>{t.home.trainingProgress}</Text>
 
                     <View style={styles.progressRow}>
                         <Text style={styles.progressNumber}>0%</Text>
@@ -61,7 +126,7 @@ export default function HomeScreen() {
                 </View>
 
                 {/* Available Modules */}
-                <Text style={styles.sectionTitle}>Available Training Modules</Text>
+                <Text style={styles.sectionTitle}>{t.home.modules}</Text>
 
                 {/* Fire Module */}
                 <TouchableOpacity
@@ -74,11 +139,11 @@ export default function HomeScreen() {
 
                     <View style={styles.moduleInfo}>
                         <Text style={styles.moduleTitle}>
-                            Fire & Explosion Response
+                            {t.home.fireTitle}
                         </Text>
 
                         <Text style={styles.moduleDescription}>
-                            Learn emergency response procedures for industrial fires.
+                            {t.home.fireDescription}
                         </Text>
 
                         <View style={styles.moduleMeta}>
@@ -100,11 +165,11 @@ export default function HomeScreen() {
 
                     <View style={styles.moduleInfo}>
                         <Text style={styles.moduleTitle}>
-                            Gas Leak & Confined Space
+                            {t.home.gasTitle}
                         </Text>
 
                         <Text style={styles.moduleDescription}>
-                            Learn gas leak detection and confined space safety protocols.
+                            {t.home.gasDescription}
                         </Text>
 
                         <View style={styles.moduleMeta}>
@@ -116,14 +181,64 @@ export default function HomeScreen() {
                 </TouchableOpacity>
 
                 {/* Certificates */}
-                <Text style={styles.sectionTitle}>Your Certificates</Text>
+                <Text style={styles.sectionTitle}>{t.home.certificates}</Text>
 
                 <View style={styles.emptyCard}>
                     <Text style={styles.emptyIcon}>🏆</Text>
-                    <Text style={styles.emptyTitle}>No certificates yet</Text>
+                    <Text style={styles.emptyTitle}>{t.home.noCertificates}</Text>
                     <Text style={styles.emptyText}>
                         Complete a training module to earn your certificate.
                     </Text>
+                </View>
+
+                {/* Training Hub Quick Access Section */}
+                <Text style={styles.sectionTitle}>{t.home.quickActions}</Text>
+
+                <View style={styles.quickGrid}>
+                    {/* Learn Training Button */}
+                    <TouchableOpacity
+                        style={styles.quickCard}
+                        onPress={() => router.push("/module/fire")}
+                    >
+                        <View style={[styles.quickIconBox, { backgroundColor: "#2A1805" }]}>
+                            <Text style={styles.quickIcon}>🎓</Text>
+                        </View>
+                        <View style={styles.quickTextContainer}>
+                            <Text style={styles.quickCardTitle}>{t.home.learnTrainingBtn}</Text>
+                            <Text style={styles.quickCardDesc}>{t.home.learnTrainingDesc}</Text>
+                        </View>
+                        <Text style={styles.quickArrow}>→</Text>
+                    </TouchableOpacity>
+
+                    {/* Assessment Button */}
+                    <TouchableOpacity
+                        style={styles.quickCard}
+                        onPress={() => router.push("/assessment")}
+                    >
+                        <View style={[styles.quickIconBox, { backgroundColor: "#0D2218" }]}>
+                            <Text style={styles.quickIcon}>📝</Text>
+                        </View>
+                        <View style={styles.quickTextContainer}>
+                            <Text style={styles.quickCardTitle}>{t.home.assessmentBtn}</Text>
+                            <Text style={styles.quickCardDesc}>{t.home.assessmentDesc}</Text>
+                        </View>
+                        <Text style={styles.quickArrow}>→</Text>
+                    </TouchableOpacity>
+
+                    {/* Certificate Button */}
+                    <TouchableOpacity
+                        style={styles.quickCard}
+                        onPress={() => router.push("/certificate")}
+                    >
+                        <View style={[styles.quickIconBox, { backgroundColor: "#221A05" }]}>
+                            <Text style={styles.quickIcon}>🏆</Text>
+                        </View>
+                        <View style={styles.quickTextContainer}>
+                            <Text style={styles.quickCardTitle}>{t.home.certificateBtn}</Text>
+                            <Text style={styles.quickCardDesc}>{t.home.certificateDesc}</Text>
+                        </View>
+                        <Text style={styles.quickArrow}>→</Text>
+                    </TouchableOpacity>
                 </View>
 
             </ScrollView>
@@ -136,6 +251,48 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#050606",
         paddingHorizontal: 20,
+    },
+    languageRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 20,
+    },
+
+    languageLabel: {
+        color: "#777777",
+        fontSize: 11,
+        fontWeight: "700",
+        letterSpacing: 1,
+    },
+
+    languageSelector: {
+        flexDirection: "row",
+        backgroundColor: "#151515",
+        borderRadius: 10,
+        padding: 3,
+        borderWidth: 1,
+        borderColor: "#292929",
+    },
+
+    languageButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 7,
+        borderRadius: 7,
+    },
+
+    languageActive: {
+        backgroundColor: "#ff8a00",
+    },
+
+    languageText: {
+        color: "#999999",
+        fontSize: 12,
+        fontWeight: "700",
+    },
+
+    languageActiveText: {
+        color: "#000000",
     },
 
     header: {
@@ -309,5 +466,56 @@ const styles = StyleSheet.create({
         fontSize: 12,
         textAlign: "center",
         marginTop: 5,
+    },
+
+    quickGrid: {
+        gap: 12,
+        marginBottom: 35,
+    },
+
+    quickCard: {
+        backgroundColor: "#101212",
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#252525",
+        padding: 16,
+        flexDirection: "row",
+        alignItems: "center",
+    },
+
+    quickIconBox: {
+        width: 48,
+        height: 48,
+        borderRadius: 10,
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 14,
+    },
+
+    quickIcon: {
+        fontSize: 22,
+    },
+
+    quickTextContainer: {
+        flex: 1,
+    },
+
+    quickCardTitle: {
+        color: "#ffffff",
+        fontSize: 15,
+        fontWeight: "700",
+        marginBottom: 3,
+    },
+
+    quickCardDesc: {
+        color: "#888888",
+        fontSize: 12,
+    },
+
+    quickArrow: {
+        color: "#ff8a00",
+        fontSize: 20,
+        fontWeight: "700",
+        marginLeft: 8,
     },
 });

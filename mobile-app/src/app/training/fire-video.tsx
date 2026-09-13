@@ -6,7 +6,7 @@ import {
     ScrollView,
 } from "react-native";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { VideoView, useVideoPlayer } from "expo-video";
 
 const FIRE_VIDEO = require("../../../assets/videos/fire-safety.mp4");
@@ -18,13 +18,16 @@ export default function FireSafetyVideoScreen() {
         player.loop = false;
     });
 
-    const handleContinue = () => {
-        if (!videoCompleted) {
-            return;
-        }
+    useEffect(() => {
+        const subscription = player.addListener(
+            "playToEnd",
+            () => {
+                setVideoCompleted(true);
+            }
+        );
 
-        router.push("/ar/preparation");
-    };
+        return () => subscription.remove();
+    }, [player]);
 
     return (
         <View style={styles.container}>
@@ -38,90 +41,90 @@ export default function FireSafetyVideoScreen() {
                         <Text style={styles.back}>‹</Text>
                     </TouchableOpacity>
 
-                    <Text style={styles.step}>TRAINING • 1 / 3</Text>
+                    <Text style={styles.headerTitle}>
+                        Fire Safety Training
+                    </Text>
+
+                    <View style={{ width: 30 }} />
                 </View>
 
-                {/* Title */}
+                {/* Progress */}
+                <Text style={styles.step}>STEP 1 OF 4</Text>
+
                 <Text style={styles.title}>
-                    Fire Safety Briefing
+                    Safety Briefing
                 </Text>
 
-                <Text style={styles.description}>
-                    Watch this safety briefing before entering the
-                    AR practical simulation.
+                <Text style={styles.subtitle}>
+                    Watch the complete safety briefing before starting
+                    the AR practical training.
                 </Text>
 
                 {/* Video */}
                 <View style={styles.videoContainer}>
                     <VideoView
-                        player={player}
                         style={styles.video}
-                        contentFit="contain"
+                        player={player}
                         nativeControls
+                        contentFit="contain"
                     />
                 </View>
 
-                {/* Training information */}
-                <View style={styles.infoCard}>
-                    <View>
-                        <Text style={styles.infoTitle}>
-                            Before you begin
-                        </Text>
+                {/* Status */}
+                <View style={styles.statusCard}>
+                    <View
+                        style={[
+                            styles.statusDot,
+                            videoCompleted && styles.statusCompleted,
+                        ]}
+                    />
 
-                        <Text style={styles.infoText}>
-                            Learn how to identify industrial fire hazards,
-                            select the correct extinguisher and maintain
-                            a safe distance.
-                        </Text>
-                    </View>
+                    <Text style={styles.statusText}>
+                        {videoCompleted
+                            ? "Video completed"
+                            : "Watch the complete video"}
+                    </Text>
                 </View>
 
-                {/* Key points */}
-                <Text style={styles.sectionTitle}>
-                    Key safety points
-                </Text>
+                {/* Learning Points */}
+                <View style={styles.card}>
+                    <Text style={styles.cardTitle}>
+                        You will learn
+                    </Text>
 
-                <View style={styles.pointsCard}>
-                    <SafetyPoint text="Identify the type of fire before responding" />
-                    <SafetyPoint text="Select the correct fire extinguisher" />
-                    <SafetyPoint text="Maintain a safe distance from the hazard" />
-                    <SafetyPoint text="Follow the emergency response procedure" />
+                    <Text style={styles.item}>
+                        ✓ Identifying fire hazards
+                    </Text>
+
+                    <Text style={styles.item}>
+                        ✓ Raising the emergency alarm
+                    </Text>
+
+                    <Text style={styles.item}>
+                        ✓ Selecting the correct extinguisher
+                    </Text>
+
+                    <Text style={styles.item}>
+                        ✓ Safe evacuation procedure
+                    </Text>
                 </View>
 
-                {/* Completion */}
+                {/* Continue */}
                 <TouchableOpacity
                     style={[
-                        styles.completeButton,
-                        !videoCompleted && styles.disabledButton,
+                        styles.button,
+                        !videoCompleted && styles.buttonDisabled,
                     ]}
                     disabled={!videoCompleted}
-                    onPress={handleContinue}
+                    onPress={() => router.push("/ar/preparation")}
                 >
-                    <Text style={styles.completeText}>
+                    <Text style={styles.buttonText}>
                         {videoCompleted
-                            ? "CONTINUE TO AR TRAINING  →"
+                            ? "CONTINUE TO AR TRAINING"
                             : "WATCH VIDEO TO CONTINUE"}
                     </Text>
                 </TouchableOpacity>
-
-                <Text style={styles.footer}>
-                    Complete the briefing before starting the practical simulation.
-                </Text>
             </ScrollView>
-        </View>
-    );
-}
-
-function SafetyPoint({ text }: { text: string }) {
-    return (
-        <View style={styles.point}>
-            <View style={styles.check}>
-                <Text style={styles.checkText}>✓</Text>
-            </View>
-
-            <Text style={styles.pointText}>
-                {text}
-            </Text>
         </View>
     );
 }
@@ -129,56 +132,64 @@ function SafetyPoint({ text }: { text: string }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#050606",
-        paddingHorizontal: 20,
+        backgroundColor: "#080808",
     },
 
     content: {
+        padding: 20,
         paddingBottom: 40,
     },
 
     header: {
-        marginTop: 55,
         flexDirection: "row",
-        justifyContent: "space-between",
         alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 25,
     },
 
     back: {
-        color: "#FFFFFF",
+        color: "#ffffff",
         fontSize: 38,
         fontWeight: "300",
     },
 
+    headerTitle: {
+        color: "#ffffff",
+        fontSize: 18,
+        fontWeight: "700",
+    },
+
     step: {
-        color: "#888",
-        fontSize: 11,
-        letterSpacing: 0.8,
+        color: "#ff8a00",
+        fontSize: 12,
+        fontWeight: "700",
+        letterSpacing: 1,
+        marginBottom: 8,
     },
 
     title: {
-        color: "#FFFFFF",
-        fontSize: 28,
+        color: "#ffffff",
+        fontSize: 30,
         fontWeight: "800",
-        marginTop: 30,
+        marginBottom: 8,
     },
 
-    description: {
-        color: "#999",
-        fontSize: 14,
-        lineHeight: 21,
-        marginTop: 10,
+    subtitle: {
+        color: "#9b9b9b",
+        fontSize: 15,
+        lineHeight: 22,
+        marginBottom: 20,
     },
 
     videoContainer: {
         width: "100%",
-        height: 210,
-        backgroundColor: "#101212",
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#252525",
+        height: 215,
+        backgroundColor: "#151515",
+        borderRadius: 18,
         overflow: "hidden",
-        marginTop: 25,
+        borderWidth: 1,
+        borderColor: "#333333",
+        marginBottom: 15,
     },
 
     video: {
@@ -186,97 +197,73 @@ const styles = StyleSheet.create({
         height: "100%",
     },
 
-    infoCard: {
-        backgroundColor: "#101212",
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#252525",
-        padding: 16,
-        marginTop: 20,
-    },
-
-    infoTitle: {
-        color: "#FFFFFF",
-        fontSize: 16,
-        fontWeight: "700",
-        marginBottom: 7,
-    },
-
-    infoText: {
-        color: "#999",
-        fontSize: 12,
-        lineHeight: 19,
-    },
-
-    sectionTitle: {
-        color: "#FFFFFF",
-        fontSize: 19,
-        fontWeight: "700",
-        marginTop: 28,
-        marginBottom: 14,
-    },
-
-    pointsCard: {
-        backgroundColor: "#101212",
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#252525",
-        padding: 16,
-    },
-
-    point: {
+    statusCard: {
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 14,
+        backgroundColor: "#121212",
+        borderRadius: 12,
+        padding: 14,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: "#292929",
     },
 
-    check: {
-        width: 25,
-        height: 25,
-        borderRadius: 13,
-        backgroundColor: "#1B1510",
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 12,
+    statusDot: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: "#777777",
+        marginRight: 10,
     },
 
-    checkText: {
-        color: "#FF6600",
+    statusCompleted: {
+        backgroundColor: "#4CAF50",
+    },
+
+    statusText: {
+        color: "#cccccc",
         fontSize: 14,
+        fontWeight: "600",
+    },
+
+    card: {
+        backgroundColor: "#121212",
+        borderRadius: 16,
+        padding: 18,
+        marginBottom: 25,
+        borderWidth: 1,
+        borderColor: "#292929",
+    },
+
+    cardTitle: {
+        color: "#ffffff",
+        fontSize: 17,
         fontWeight: "700",
+        marginBottom: 15,
     },
 
-    pointText: {
-        color: "#CCC",
-        fontSize: 13,
-        lineHeight: 19,
-        flex: 1,
+    item: {
+        color: "#cccccc",
+        fontSize: 14,
+        marginBottom: 11,
+        lineHeight: 20,
     },
 
-    completeButton: {
-        height: 56,
-        backgroundColor: "#FF6600",
-        borderRadius: 9,
+    button: {
+        backgroundColor: "#ff8a00",
+        paddingVertical: 17,
+        borderRadius: 12,
         alignItems: "center",
-        justifyContent: "center",
-        marginTop: 25,
     },
 
-    disabledButton: {
-        backgroundColor: "#3A3A3A",
+    buttonDisabled: {
+        backgroundColor: "#3a3a3a",
     },
 
-    completeText: {
-        color: "#FFFFFF",
-        fontSize: 13,
+    buttonText: {
+        color: "#000000",
+        fontSize: 14,
         fontWeight: "800",
-        letterSpacing: 0.6,
-    },
-
-    footer: {
-        color: "#666",
-        fontSize: 11,
-        textAlign: "center",
-        marginTop: 15,
+        letterSpacing: 0.5,
     },
 });
