@@ -8,7 +8,7 @@ import { protect } from "../middleware/auth.middleware.js";
 const router = express.Router();
 
 router.post("/", protect, createCertificate);
-
 router.get("/verify/:certificateId", verifyCertificate);
+router.get("/:certificateId", verifyCertificate);
 
 export default router;

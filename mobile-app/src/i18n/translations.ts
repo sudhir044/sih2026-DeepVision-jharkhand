@@ -88,6 +88,11 @@ export const translations = {
             assessmentDesc: "Test safety skills & get certified",
             certificateBtn: "Certificates",
             certificateDesc: "View & verify earned certificates",
+            navHome: "Home",
+            navTraining: "Training",
+            navAssessment: "Assessment",
+            navCertificate: "Certificates",
+            navAR: "AR Mode",
         },
 
         // Fire module
@@ -283,6 +288,11 @@ export const translations = {
             assessmentDesc: "सुरक्षा ज्ञान जांचें और प्रमाणित हों",
             certificateBtn: "प्रमाणपत्र",
             certificateDesc: "अर्जित प्रमाणपत्र देखें और सत्यापित करें",
+            navHome: "होम",
+            navTraining: "प्रशिक्षण",
+            navAssessment: "मूल्यांकन",
+            navCertificate: "प्रमाणपत्र",
+            navAR: "AR मोड",
         },
 
         fire: {
@@ -469,6 +479,11 @@ export const translations = {
             assessmentDesc: "Test safety skills & get certified",
             certificateBtn: "Certificates",
             certificateDesc: "View & verify earned certificates",
+            navHome: "Home",
+            navTraining: "Training",
+            navAssessment: "Assessment",
+            navCertificate: "Certificates",
+            navAR: "AR Mode",
         },
 
         fire: {

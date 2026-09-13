@@ -9,6 +9,7 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { getCurrentUser, logout } from "../services/auth";
 import { useLanguage } from "../i18n/LanguageContext";
+import BottomNavBar from "../components/BottomNavBar";
 
 export default function HomeScreen() {
     const [user, setUser] = useState<{ id?: number; name?: string; email?: string } | null>(null);
@@ -26,7 +27,10 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.container}>
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
 
                 {/* Header */}
                 <View style={styles.header}>
@@ -242,6 +246,9 @@ export default function HomeScreen() {
                 </View>
 
             </ScrollView>
+
+            {/* Floating Navigation Dock with AR Action Button */}
+            <BottomNavBar activeTab="home" />
         </View>
     );
 }
@@ -251,6 +258,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#050606",
         paddingHorizontal: 20,
+    },
+    scrollContent: {
+        paddingBottom: 110,
     },
     languageRow: {
         flexDirection: "row",

@@ -26,18 +26,35 @@ export const submitTrainingResult = async (req, res) => {
       });
     }
 
-    // Check module exists
-    const module = await sql`
-      SELECT id
-      FROM training_modules
-      WHERE id = ${moduleId}
-    `;
-
-    if (module.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Training module not found",
-      });
+    // Resolve moduleId (supports string codes like 'FIRE_01' and numeric IDs)
+    let numericModuleId = moduleId;
+    if (typeof moduleId === "string" && !/^\d+$/.test(moduleId)) {
+      const mod = await sql`
+        SELECT id
+        FROM training_modules
+        WHERE code = ${moduleId}
+      `;
+      if (mod.length > 0) {
+        numericModuleId = mod[0].id;
+      } else {
+        return res.status(404).json({
+          success: false,
+          message: "Training module not found",
+        });
+      }
+    } else {
+      numericModuleId = parseInt(moduleId, 10);
+      const mod = await sql`
+        SELECT id
+        FROM training_modules
+        WHERE id = ${numericModuleId}
+      `;
+      if (mod.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Training module not found",
+        });
+      }
     }
 
     // Save result
@@ -54,7 +71,7 @@ export const submitTrainingResult = async (req, res) => {
       )
       VALUES (
         ${userId},
-        ${moduleId},
+        ${numericModuleId},
         ${score},
         ${duration || 0},
         ${correctActions || 0},

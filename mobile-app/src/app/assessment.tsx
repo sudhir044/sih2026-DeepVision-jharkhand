@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useState } from "react";
+import { submitTrainingResult } from "../services/training";
 
 const QUESTIONS = [
     {
@@ -134,6 +135,23 @@ export default function AssessmentScreen() {
         if (currentQuestion === QUESTIONS.length - 1) {
             setScore(newScore);
             setFinished(true);
+
+            const finalPercentage = Math.round(
+                (newScore / QUESTIONS.length) * 100
+            );
+            const passed = finalPercentage >= 70;
+
+            submitTrainingResult({
+                moduleId: "FIRE_01",
+                score: finalPercentage,
+                duration: 10,
+                correctActions: newScore,
+                wrongActions: QUESTIONS.length - newScore,
+                safetyViolations: 0,
+                status: passed ? "passed" : "failed",
+            }).catch((err) => {
+                console.error("Failed to submit training result:", err);
+            });
             return;
         }
 
