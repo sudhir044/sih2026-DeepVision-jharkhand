@@ -23,6 +23,8 @@ export const translations = {
             getStarted: "GET STARTED",
             existingAccount:
                 "I ALREADY HAVE AN ACCOUNT",
+            badge: "Government of Jharkhand",
+            government: "Department of Mines and Geology, Jharkhand",
         },
 
         login: {
@@ -34,6 +36,26 @@ export const translations = {
             loggingIn: "Logging in...",
             noAccount: "Don't have an account?",
             register: "Register",
+        },
+
+        signup: {
+            title: "Create Account",
+            subtitle: "Register to begin your safety training.",
+            name: "Full Name",
+            namePlaceholder: "Enter your full name",
+            email: "Email",
+            emailPlaceholder: "Enter your email",
+            password: "Password",
+            passwordPlaceholder: "Create a password",
+            confirmPassword: "Confirm Password",
+            confirmPasswordPlaceholder: "Confirm your password",
+            signupButton: "Sign Up",
+            signingUp: "Signing up...",
+            alreadyHaveAccount: "Already have an account? Login",
+            missingDetails: "Missing Details",
+            enterAllFields: "Please enter all required fields.",
+            passwordsDontMatch: "Passwords do not match.",
+            signupFailed: "Signup Failed",
         },
 
         home: {
@@ -138,6 +160,8 @@ export const translations = {
             getStarted: "शुरू करें",
             existingAccount:
                 "मेरे पास पहले से खाता है",
+            badge: "झारखंड सरकार",
+            government: "खान एवं भूतत्व विभाग, झारखंड",
         },
 
         login: {
@@ -150,6 +174,26 @@ export const translations = {
             loggingIn: "लॉगिन हो रहा है...",
             noAccount: "खाता नहीं है?",
             register: "पंजीकरण करें",
+        },
+
+        signup: {
+            title: "खाता बनाएँ",
+            subtitle: "अपना सुरक्षा प्रशिक्षण शुरू करने के लिए पंजीकरण करें।",
+            name: "पूरा नाम",
+            namePlaceholder: "अपना पूरा नाम दर्ज करें",
+            email: "ईमेल",
+            emailPlaceholder: "अपना ईमेल दर्ज करें",
+            password: "पासवर्ड",
+            passwordPlaceholder: "एक पासवर्ड बनाएँ",
+            confirmPassword: "पासवर्ड की पुष्टि करें",
+            confirmPasswordPlaceholder: "अपने पासवर्ड की पुष्टि करें",
+            signupButton: "साइन अप करें",
+            signingUp: "साइन अप हो रहा है...",
+            alreadyHaveAccount: "पहले से ही एक खाता है? लॉगिन करें",
+            missingDetails: "विवरण गायब हैं",
+            enterAllFields: "कृपया सभी आवश्यक फ़ील्ड दर्ज करें।",
+            passwordsDontMatch: "पासवर्ड मेल नहीं खाते।",
+            signupFailed: "साइन अप विफल",
         },
 
         home: {

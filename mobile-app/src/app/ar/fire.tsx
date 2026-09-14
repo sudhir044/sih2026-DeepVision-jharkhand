@@ -1,48 +1,134 @@
+import React, { useState, useRef } from 'react';
 import {
     StyleSheet,
     Text,
     TouchableOpacity,
     View,
+    Button,
+    Animated,
+    Easing
 } from "react-native";
 import { router } from "expo-router";
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 export default function FireARScreen() {
+    const [permission, requestPermission] = useCameraPermissions();
+    const [fireDetected, setFireDetected] = useState(false);
+    const [fireExtinguished, setFireExtinguished] = useState(false);
+
+    // Animation values
+    const fireScale = useRef(new Animated.Value(1)).current;
+    const foamOpacity = useRef(new Animated.Value(0)).current;
+
+    if (!permission) {
+        return <View style={styles.container} />;
+    }
+
+    if (!permission.granted) {
+        return (
+            <View style={styles.permissionContainer}>
+                <Text style={styles.permissionText}>We need your permission to show the camera</Text>
+                <Button onPress={requestPermission} title="Grant Permission" />
+            </View>
+        );
+    }
+
+    const animateExtinguish = () => {
+        // Show foam spraying
+        Animated.sequence([
+            Animated.timing(foamOpacity, {
+                toValue: 1,
+                duration: 500,
+                useNativeDriver: true,
+            }),
+            // Shrink the fire and hide foam
+            Animated.parallel([
+                Animated.timing(fireScale, {
+                    toValue: 0.1,
+                    duration: 1500,
+                    easing: Easing.out(Easing.exp),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(foamOpacity, {
+                    toValue: 0,
+                    duration: 1500,
+                    useNativeDriver: true,
+                })
+            ])
+        ]).start(() => {
+            // Once animation completes, set state
+            setFireExtinguished(true);
+        });
+    };
+
     return (
         <View style={styles.container}>
 
             {/* AR View */}
-            <View style={styles.arView}>
+            <CameraView style={styles.arView} facing="back">
                 <View style={styles.topBar}>
                     <Text style={styles.arLabel}>AR TRAINING</Text>
                     <Text style={styles.timer}>02:34</Text>
                 </View>
 
                 {/* Simulated fire */}
-                <View style={styles.fireArea}>
-                    <Text style={styles.fire}>🔥</Text>
-                    <Text style={styles.fireText}>FIRE DETECTED</Text>
-                </View>
+                {fireDetected && !fireExtinguished && (
+                    <View style={styles.fireArea}>
+                        <Animated.View style={{ transform: [{ scale: fireScale }] }}>
+                            <Text style={styles.fire}>🔥</Text>
+                        </Animated.View>
+
+                        <Animated.View style={[styles.foamParticles, { opacity: foamOpacity }]}>
+                            <Text style={styles.foamText}>❄️❄️❄️</Text>
+                            <Text style={styles.foamText}>💨💨💨</Text>
+                        </Animated.View>
+
+                        <Text style={styles.fireText}>FIRE DETECTED</Text>
+                    </View>
+                )}
+
+                {fireExtinguished && (
+                    <View style={styles.fireArea}>
+                        <Text style={styles.fire}>✅</Text>
+                        <Text style={[styles.fireText, {color: '#22c55e'}]}>FIRE EXTINGUISHED</Text>
+                    </View>
+                )}
 
                 {/* Detection message */}
-                <View style={styles.detection}>
-                    <View style={styles.statusDot} />
-                    <Text style={styles.detectionText}>
-                        Industrial fire detected
-                    </Text>
-                </View>
+                {fireDetected && !fireExtinguished && (
+                    <View style={styles.detection}>
+                        <View style={styles.statusDot} />
+                        <Text style={styles.detectionText}>
+                            Industrial fire detected
+                        </Text>
+                    </View>
+                )}
+
+                {/* Spawn Fire Button */}
+                {!fireDetected && (
+                    <View style={styles.scanArea}>
+                        <TouchableOpacity 
+                            style={styles.scanButton} 
+                            onPress={() => setFireDetected(true)}
+                        >
+                            <Text style={styles.scanButtonText}>Scan Plane & Spawn Fire</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
 
                 {/* Instruction */}
                 <View style={styles.instruction}>
                     <Text style={styles.instructionTitle}>
-                        Select the correct extinguisher
+                        {fireExtinguished ? "Area Secured" : "Select the correct extinguisher"}
                     </Text>
 
                     <Text style={styles.instructionText}>
-                        Choose the appropriate extinguisher before
-                        approaching the fire.
+                        {fireExtinguished 
+                            ? "Great job using the correct extinguisher to put out the fire." 
+                            : "Choose the appropriate extinguisher before approaching the fire."}
                     </Text>
                 </View>
-            </View>
+            </CameraView>
 
             {/* Bottom Controls */}
             <View style={styles.bottomPanel}>
@@ -53,21 +139,39 @@ export default function FireARScreen() {
 
                 <View style={styles.options}>
 
-                    <TouchableOpacity style={styles.option}>
+                    <TouchableOpacity 
+                        style={styles.option} 
+                        onPress={() => {
+                            if (!fireDetected) alert("Scan the plane to spawn the fire first!");
+                            else animateExtinguish();
+                        }}
+                    >
                         <Text style={styles.optionIcon}>🧯</Text>
                         <Text style={styles.optionText}>
                             CO₂
                         </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.option}>
+                    <TouchableOpacity 
+                        style={styles.option}
+                        onPress={() => {
+                            if (!fireDetected) alert("Scan the plane to spawn the fire first!");
+                            else alert("Water is dangerous for electrical/chemical industrial fires! Use CO2 or Foam.");
+                        }}
+                    >
                         <Text style={styles.optionIcon}>🧯</Text>
                         <Text style={styles.optionText}>
                             Water
                         </Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.option}>
+                    <TouchableOpacity 
+                        style={styles.option}
+                        onPress={() => {
+                            if (!fireDetected) alert("Scan the plane to spawn the fire first!");
+                            else animateExtinguish();
+                        }}
+                    >
                         <Text style={styles.optionIcon}>🧯</Text>
                         <Text style={styles.optionText}>
                             Foam
@@ -100,6 +204,19 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#000",
+    },
+
+    permissionContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#000',
+    },
+
+    permissionText: {
+        color: '#fff',
+        textAlign: 'center',
+        marginBottom: 20,
     },
 
     arView: {
@@ -151,6 +268,18 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
 
+    foamParticles: {
+        position: 'absolute',
+        top: 20,
+        zIndex: 10,
+        alignItems: 'center',
+    },
+
+    foamText: {
+        fontSize: 40,
+        marginVertical: -5,
+    },
+
     detection: {
         position: "absolute",
         top: 115,
@@ -174,6 +303,27 @@ const styles = StyleSheet.create({
     detectionText: {
         color: "#FFFFFF",
         fontSize: 12,
+    },
+
+    scanArea: {
+        position: 'absolute',
+        top: '40%',
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+    },
+
+    scanButton: {
+        backgroundColor: '#FF6600',
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        borderRadius: 8,
+    },
+
+    scanButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 14,
     },
 
     instruction: {
