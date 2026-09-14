@@ -10,7 +10,7 @@ import {
     Language,
 } from "./translations";
 
-type TranslationData = typeof translations[Language];
+type TranslationData = any;
 
 interface LanguageContextType {
     language: Language;
@@ -33,7 +33,10 @@ export function LanguageProvider({
     const [language, setLanguage] =
         useState<Language>("EN");
 
-    const t = translations[language];
+    const t = ((translations[language] &&
+        Object.keys(translations[language]).length > 0
+        ? translations[language]
+        : translations.EN) as TranslationData) || translations.EN;
 
     return (
         <LanguageContext.Provider

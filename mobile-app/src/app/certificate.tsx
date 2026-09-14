@@ -11,6 +11,7 @@ import QRCode from "react-native-qrcode-svg";
 import { useRouter } from "expo-router";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system/legacy";
 import qrcode from "qrcode-generator";
 
 import { apiRequest } from "../services/api";
@@ -669,46 +670,77 @@ body {
 `;
 
 
-            const { uri } =
-                await Print.printToFileAsync({
-                    html,
-                    orientation:
-                        Print.Orientation.landscape,
-                });
+            // 1. Generate the PDF
+            const { uri } = await Print.printToFileAsync({
+                html,
+                width: 842,
+                height: 595,
+            });
 
-            console.log(
-                "Certificate PDF created:",
-                uri
-            );
+            console.log("Certificate PDF created:", uri);
 
+            // 2. On Android (especially in Expo Go), Print.printToFileAsync writes to unscoped cache/Print/
+            // which causes Sharing.shareAsync to fail with: "Not allowed to read file under given URL."
+            // Copying the PDF to the scoped documentDirectory/cacheDirectory ensures the Android FileProvider has permission to share it.
+            let shareableUri = uri;
+            try {
+                const baseDir =
+                    FileSystem.documentDirectory || FileSystem.cacheDirectory;
 
-            const sharingAvailable =
-                await Sharing.isAvailableAsync();
+                if (baseDir) {
+                    const cleanId = safeCertificateId.replace(
+                        /[^a-zA-Z0-9_-]/g,
+                        "_"
+                    );
+                    const destUri = `${baseDir}DeepVision_Certificate_${cleanId}.pdf`;
 
-            if (sharingAvailable) {
-                await Sharing.shareAsync(uri, {
-                    mimeType: "application/pdf",
+                    await FileSystem.copyAsync({
+                        from: uri,
+                        to: destUri,
+                    });
 
-                    dialogTitle:
-                        "Share DeepVision Certificate",
-
-                    UTI: "com.adobe.pdf",
-                });
-            } else {
-                Alert.alert(
-                    "Certificate Generated",
-                    "The certificate PDF was generated successfully."
+                    shareableUri = destUri;
+                    console.log(
+                        "Certificate copied to scoped storage:",
+                        shareableUri
+                    );
+                }
+            } catch (copyErr) {
+                console.warn(
+                    "Could not copy PDF to scoped directory, using original URI:",
+                    copyErr
                 );
             }
-        } catch (err) {
-            console.error(
-                "PDF generation error:",
-                err
-            );
+
+            // 3. Share the PDF using the system share sheet
+            const sharingAvailable = await Sharing.isAvailableAsync();
+
+            if (sharingAvailable) {
+                try {
+                    await Sharing.shareAsync(shareableUri, {
+                        mimeType: "application/pdf",
+                        dialogTitle: "DeepVision Safety Certificate",
+                        UTI: "com.adobe.pdf",
+                    });
+                } catch (shareErr) {
+                    console.warn(
+                        "Sharing.shareAsync failed, falling back to system Print:",
+                        shareErr
+                    );
+                    // Native Print dialog provides built-in "Save as PDF" / printer
+                    await Print.printAsync({ uri });
+                }
+            } else {
+                // On Web / desktop without share intent, open print / save dialog directly
+                await Print.printAsync({ html });
+            }
+        } catch (err: any) {
+            console.error("PDF generation error:", err);
 
             Alert.alert(
                 "PDF Error",
-                "Unable to generate the certificate PDF. Please try again."
+                err?.message ||
+                    "Unable to generate the certificate PDF. Please try again."
             );
         }
     };
