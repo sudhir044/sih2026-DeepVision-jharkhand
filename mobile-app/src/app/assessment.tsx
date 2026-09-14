@@ -8,6 +8,8 @@ import {
 import { router } from "expo-router";
 import { useState } from "react";
 import { submitTrainingResult } from "../services/training";
+import { apiRequest } from "../services/api";
+import { getToken } from "../services/auth";
 
 const QUESTIONS = [
     {
@@ -116,42 +118,53 @@ export default function AssessmentScreen() {
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
     const [score, setScore] = useState(0);
+    const [finalScore, setFinalScore] = useState<number | null>(null);
     const [finished, setFinished] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState("");
 
     const question = QUESTIONS[currentQuestion];
 
     const handleAnswer = (index: number) => {
-        if (selectedAnswer !== null) return;
+        if (selectedAnswer !== null || submitting) return;
 
         setSelectedAnswer(index);
     };
 
-    const handleNext = () => {
-        if (selectedAnswer === null) return;
+    const handleNext = async () => {
+        if (selectedAnswer === null || submitting) return;
 
-        const newScore =
-            score + (selectedAnswer === question.answer ? 1 : 0);
+        const isCorrect = selectedAnswer === question.answer;
+        const newScore = score + (isCorrect ? 1 : 0);
 
         if (currentQuestion === QUESTIONS.length - 1) {
             setScore(newScore);
-            setFinished(true);
+            setFinalScore(newScore);
+            setSubmitting(true);
+            setSubmitError("");
 
             const finalPercentage = Math.round(
                 (newScore / QUESTIONS.length) * 100
             );
             const passed = finalPercentage >= 70;
 
-            submitTrainingResult({
-                moduleId: "FIRE_01",
-                score: finalPercentage,
-                duration: 10,
-                correctActions: newScore,
-                wrongActions: QUESTIONS.length - newScore,
-                safetyViolations: 0,
-                status: passed ? "passed" : "failed",
-            }).catch((err) => {
+            try {
+                await submitTrainingResult({
+                    moduleId: "FIRE_01",
+                    score: finalPercentage,
+                    duration: 10,
+                    correctActions: newScore,
+                    wrongActions: QUESTIONS.length - newScore,
+                    safetyViolations: 0,
+                    status: passed ? "passed" : "failed",
+                });
+            } catch (err: any) {
                 console.error("Failed to submit training result:", err);
-            });
+                setSubmitError(err?.message || "Failed to sync result with server.");
+            } finally {
+                setSubmitting(false);
+                setFinished(true);
+            }
             return;
         }
 
@@ -160,8 +173,9 @@ export default function AssessmentScreen() {
         setCurrentQuestion(currentQuestion + 1);
     };
 
+    const displayScore = finalScore !== null ? finalScore : score;
     const percentage = Math.round(
-        (score / QUESTIONS.length) * 100
+        (displayScore / QUESTIONS.length) * 100
     );
 
     if (finished) {
@@ -183,9 +197,15 @@ export default function AssessmentScreen() {
                     </Text>
 
                     <Text style={styles.resultText}>
-                        You answered {score} out of{" "}
+                        You answered {displayScore} out of{" "}
                         {QUESTIONS.length} questions correctly.
                     </Text>
+
+                    {submitError ? (
+                        <Text style={{ color: "#f59e0b", fontSize: 12, marginBottom: 12, textAlign: "center" }}>
+                            ⚠ Sync Note: {submitError}
+                        </Text>
+                    ) : null}
 
                     <View
                         style={[
@@ -321,14 +341,16 @@ export default function AssessmentScreen() {
                 <TouchableOpacity
                     style={[
                         styles.button,
-                        selectedAnswer === null &&
+                        (selectedAnswer === null || submitting) &&
                         styles.buttonDisabled,
                     ]}
-                    disabled={selectedAnswer === null}
+                    disabled={selectedAnswer === null || submitting}
                     onPress={handleNext}
                 >
                     <Text style={styles.buttonText}>
-                        {currentQuestion === QUESTIONS.length - 1
+                        {submitting
+                            ? "SUBMITTING TO BACKEND..."
+                            : currentQuestion === QUESTIONS.length - 1
                             ? "SUBMIT ASSESSMENT"
                             : "NEXT QUESTION"}
                     </Text>

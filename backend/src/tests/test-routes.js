@@ -1,5 +1,5 @@
 /**
- * Comprehensive API Route Testing Suite for SafeAR Jharkhand Backend
+ * Comprehensive API Route Testing Suite for deepvision Jharkhand Backend
  * Complete Checklist:
  * 
  * SERVER
@@ -44,10 +44,10 @@ const report = [];
 function recordResult(category, item, passed, details = null) {
   if (passed) {
     passedTests++;
-    console.log(`  ✅ [PASS] ${item}`);
+    console.log(`   [PASS] ${item}`);
   } else {
     failedTests++;
-    console.error(`  ❌ [FAIL] ${item}`);
+    console.error(`   [FAIL] ${item}`);
     if (details) console.error(`     Error details:`, details);
   }
   report.push({ category, item, passed, details });
@@ -93,9 +93,7 @@ async function runAllTests() {
   let generatedCertId = null;
 
   try {
-    // =============================================================
     // 1. SERVER
-    // =============================================================
     console.log("📂 [SERVER]");
     const serverRes = await request("/");
     recordResult(
@@ -105,11 +103,10 @@ async function runAllTests() {
       serverRes.body
     );
 
-    // =============================================================
     // 2. MODULES
-    // =============================================================
+
     console.log("\n📂 [MODULES]");
-    
+
     // GET /api/modules
     const modulesRes = await request("/api/modules");
     const hasModules = modulesRes.status === 200 && Array.isArray(modulesRes.body?.modules) && modulesRes.body.modules.length > 0;
@@ -128,9 +125,9 @@ async function runAllTests() {
     const gasPassed = gasRes.status === 200 && gasRes.body?.module?.code === "GAS_01";
     recordResult("MODULES", "GET /api/modules/GAS_01", gasPassed, gasRes.body);
 
-    // =============================================================
+
     // 3. AUTH
-    // =============================================================
+
     console.log("\n📂 [AUTH]");
 
     // POST /api/auth/register (worker)
@@ -175,9 +172,7 @@ async function runAllTests() {
     const meNoTokenPassed = meNoTokenRes.status === 401 && meNoTokenRes.body?.success === false;
     recordResult("AUTH", "/me without token → 401", meNoTokenPassed, meNoTokenRes.body);
 
-    // =============================================================
     // 4. TRAINING
-    // =============================================================
     console.log("\n📂 [TRAINING]");
 
     // POST /api/training/result
@@ -205,9 +200,9 @@ async function runAllTests() {
     const historyPassed = historyRes.status === 200 && Array.isArray(historyRes.body?.history) && historyRes.body.history.length > 0;
     recordResult("TRAINING", "GET /api/training/history", historyPassed, { count: historyRes.body?.history?.length });
 
-    // =============================================================
+
     // 5. CERTIFICATE
-    // =============================================================
+
     console.log("\n📂 [CERTIFICATE]");
 
     // POST /api/certificates
@@ -234,9 +229,8 @@ async function runAllTests() {
     const sha256Valid = typeof certHash === "string" && certHash.length === 64 && /^[a-f0-9]+$/i.test(certHash);
     recordResult("CERTIFICATE", "SHA-256 hash exists", sha256Valid, { hash: certHash });
 
-    // =============================================================
     // 6. ADMIN
-    // =============================================================
+
     console.log("\n📂 [ADMIN]");
 
     // Register admin user directly

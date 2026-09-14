@@ -47,6 +47,15 @@ export default function ARPreparationScreen() {
                         START DEMO AR
                     </Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.button, styles.secondaryButton]}
+                    onPress={() => router.push("/assessment")}
+                >
+                    <Text style={styles.secondaryButtonText}>
+                        PROCEED TO ASSESSMENT →
+                    </Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -130,5 +139,19 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: "800",
         letterSpacing: 1,
+    },
+
+    secondaryButton: {
+        backgroundColor: "transparent",
+        borderWidth: 2,
+        borderColor: "#FF6600",
+        marginTop: 12,
+    },
+
+    secondaryButtonText: {
+        color: "#FF6600",
+        fontSize: 14,
+        fontWeight: "800",
+        letterSpacing: 0.8,
     },
 });
