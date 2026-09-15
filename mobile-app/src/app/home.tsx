@@ -35,7 +35,7 @@ export default function HomeScreen() {
                 {/* Header */}
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.greeting}>{t.home.greeting},</Text>
+                        <Text style={styles.greeting}>{t?.home?.greeting || "Welcome"},</Text>
                         <Text style={styles.name}>{user?.name || "Employee"}</Text>
                     </View>
 
@@ -55,7 +55,7 @@ export default function HomeScreen() {
                 {/* Language Selector */}
                 <View style={styles.languageRow}>
                     <Text style={styles.languageLabel}>
-                        {t.home.language}
+                        {t?.home?.language || "LANGUAGE"}
                     </Text>
 
                     <View style={styles.languageSelector}>
@@ -117,7 +117,7 @@ export default function HomeScreen() {
 
                 {/* Progress */}
                 <View style={styles.progressCard}>
-                    <Text style={styles.progressTitle}>{t.home.trainingProgress}</Text>
+                    <Text style={styles.progressTitle}>{t?.home?.trainingProgress || "Training Progress"}</Text>
 
                     <View style={styles.progressRow}>
                         <Text style={styles.progressNumber}>0%</Text>
@@ -130,7 +130,7 @@ export default function HomeScreen() {
                 </View>
 
                 {/* Available Modules */}
-                <Text style={styles.sectionTitle}>{t.home.modules}</Text>
+                <Text style={styles.sectionTitle}>{t?.home?.modules || "Available Modules"}</Text>
 
                 {/* Fire Module */}
                 <TouchableOpacity
@@ -143,11 +143,11 @@ export default function HomeScreen() {
 
                     <View style={styles.moduleInfo}>
                         <Text style={styles.moduleTitle}>
-                            {t.home.fireTitle}
+                            {t?.home?.fireTitle || "Fire & Explosion Response"}
                         </Text>
 
                         <Text style={styles.moduleDescription}>
-                            {t.home.fireDescription}
+                            {t?.home?.fireDescription || "Learn fire hazard detection, extinguisher selection and emergency evacuation."}
                         </Text>
 
                         <View style={styles.moduleMeta}>
@@ -169,11 +169,11 @@ export default function HomeScreen() {
 
                     <View style={styles.moduleInfo}>
                         <Text style={styles.moduleTitle}>
-                            {t.home.gasTitle}
+                            {t?.home?.gasTitle || "Gas Leak & Confined Space Safety"}
                         </Text>
 
                         <Text style={styles.moduleDescription}>
-                            {t.home.gasDescription}
+                            {t?.home?.gasDescription || "Learn gas detection, PPE, buddy-system and emergency extraction."}
                         </Text>
 
                         <View style={styles.moduleMeta}>
@@ -185,18 +185,18 @@ export default function HomeScreen() {
                 </TouchableOpacity>
 
                 {/* Certificates */}
-                <Text style={styles.sectionTitle}>{t.home.certificates}</Text>
+                <Text style={styles.sectionTitle}>{t?.home?.certificates || "Certificates"}</Text>
 
                 <View style={styles.emptyCard}>
                     <Text style={styles.emptyIcon}>🏆</Text>
-                    <Text style={styles.emptyTitle}>{t.home.noCertificates}</Text>
+                    <Text style={styles.emptyTitle}>{t?.home?.noCertificates || "No Certificates Yet"}</Text>
                     <Text style={styles.emptyText}>
                         Complete a training module to earn your certificate.
                     </Text>
                 </View>
 
                 {/* Training Hub Quick Access Section */}
-                <Text style={styles.sectionTitle}>{t.home.quickActions}</Text>
+                <Text style={styles.sectionTitle}>{t?.home?.quickActions || "Quick Actions"}</Text>
 
                 <View style={styles.quickGrid}>
                     {/* Learn Training Button */}
@@ -208,8 +208,8 @@ export default function HomeScreen() {
                             <Text style={styles.quickIcon}>🎓</Text>
                         </View>
                         <View style={styles.quickTextContainer}>
-                            <Text style={styles.quickCardTitle}>{t.home.learnTrainingBtn}</Text>
-                            <Text style={styles.quickCardDesc}>{t.home.learnTrainingDesc}</Text>
+                            <Text style={styles.quickCardTitle}>{t?.home?.learnTrainingBtn || "Start AR Training"}</Text>
+                            <Text style={styles.quickCardDesc}>{t?.home?.learnTrainingDesc || "Experience 3D hazard simulations"}</Text>
                         </View>
                         <Text style={styles.quickArrow}>→</Text>
                     </TouchableOpacity>
@@ -223,8 +223,8 @@ export default function HomeScreen() {
                             <Text style={styles.quickIcon}>📝</Text>
                         </View>
                         <View style={styles.quickTextContainer}>
-                            <Text style={styles.quickCardTitle}>{t.home.assessmentBtn}</Text>
-                            <Text style={styles.quickCardDesc}>{t.home.assessmentDesc}</Text>
+                            <Text style={styles.quickCardTitle}>{t?.home?.assessmentBtn || "Take Assessment"}</Text>
+                            <Text style={styles.quickCardDesc}>{t?.home?.assessmentDesc || "Test your mine safety knowledge"}</Text>
                         </View>
                         <Text style={styles.quickArrow}>→</Text>
                     </TouchableOpacity>
@@ -238,8 +238,8 @@ export default function HomeScreen() {
                             <Text style={styles.quickIcon}>🏆</Text>
                         </View>
                         <View style={styles.quickTextContainer}>
-                            <Text style={styles.quickCardTitle}>{t.home.certificateBtn}</Text>
-                            <Text style={styles.quickCardDesc}>{t.home.certificateDesc}</Text>
+                            <Text style={styles.quickCardTitle}>{t?.home?.certificateBtn || "My Certificates"}</Text>
+                            <Text style={styles.quickCardDesc}>{t?.home?.certificateDesc || "View and download earned badges"}</Text>
                         </View>
                         <Text style={styles.quickArrow}>→</Text>
                     </TouchableOpacity>
