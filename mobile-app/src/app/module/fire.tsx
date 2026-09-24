@@ -87,10 +87,10 @@ export default function FireModuleScreen() {
                     </View>
                 </View>
 
-                {/* Start Button */}
+                {/* Start Training → Video */}
                 <TouchableOpacity
                     style={styles.startButton}
-                    onPress={() => router.push("/ar/preparation")}
+                    onPress={() => router.push("/training/fire-video")}
                 >
                     <Text style={styles.startText}>
                         START TRAINING
@@ -111,7 +111,9 @@ function PracticeItem({ text }: { text: string }) {
                 <Text style={styles.checkText}>✓</Text>
             </View>
 
-            <Text style={styles.practiceText}>{text}</Text>
+            <Text style={styles.practiceText}>
+                {text}
+            </Text>
         </View>
     );
 }

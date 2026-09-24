@@ -40,4 +40,12 @@ example
 
 # generated native folders
 /ios
-/android
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/unityLibrary/build/
+/android/unityLibrary/.cxx/
+/android/unityLibrary/symbols/
+/android/local.properties
+/android/unityLibrary/src/main/Il2CppOutputProject/
+/android/unityLibrary/src/main/jniStaticLibs/
