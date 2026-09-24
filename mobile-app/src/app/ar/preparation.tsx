@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     StyleSheet,
     Text,
@@ -10,34 +10,62 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useLanguage } from "../../i18n/LanguageContext";
-import { launchUnityAR } from "../../services/unityAR";
+import { launchUnityAR, addUnityEventListener } from "../../services/unityAR";
 
 export default function ARPreparationScreen() {
     const { t, language } = useLanguage();
     const [isLaunchingUnity, setIsLaunchingUnity] = useState(false);
+    const isNavigatingRef = useRef(false);
 
     const prep = t?.arPreparation || {};
+
+    const navigateToAssessment = () => {
+        if (!isNavigatingRef.current) {
+            isNavigatingRef.current = true;
+            console.log("[ARPreparationScreen] Navigating to /assessment");
+            router.push("/assessment");
+            setTimeout(() => {
+                isNavigatingRef.current = false;
+            }, 1500);
+        }
+    };
+
+    useEffect(() => {
+        const subCompleted = addUnityEventListener("UnityARCompleted", () => {
+            console.log("[ARPreparationScreen] Received UnityARCompleted event -> auto navigating to assessment");
+            navigateToAssessment();
+        });
+
+        const subClosed = addUnityEventListener("UnityARClosed", () => {
+            console.log("[ARPreparationScreen] Received UnityARClosed event (user pressed Back)");
+        });
+
+        return () => {
+            subCompleted.remove();
+            subClosed.remove();
+        };
+    }, []);
 
     const handleLaunchUnity = async () => {
         setIsLaunchingUnity(true);
         const result = await launchUnityAR();
         setIsLaunchingUnity(false);
 
-        if (!result.success) {
+        if (result.success) {
+            if (result.completed) {
+                navigateToAssessment();
+            }
+        } else {
             Alert.alert(
-                language === "HI" ? "Unity 3D AR" : "Unity 3D AR Status",
+                language === "HI" ? "AR सिमुलेशन स्थिति" : "AR Simulation Status",
                 language === "HI"
-                    ? "Unity 3D मॉड्यूल इस डिवाइस पर लोड नहीं हो सका। क्या आप कैमरा AR सिमुलेशन से जारी रखना चाहते हैं?"
-                    : `${result.error || "Unity 3D AR could not be started."} Would you like to proceed with the Camera AR training?`,
+                    ? (result.error || "AR मॉड्यूल इस डिवाइस पर शुरू नहीं हो सका। कृपया पुनः प्रयास करें।")
+                    : `${result.error || "AR simulation could not be started. Please try again."}`,
                 [
                     {
-                        text: language === "HI" ? "रद्द करें" : "Cancel",
-                        style: "cancel"
+                        text: language === "HI" ? "ठीक है" : "OK",
+                        style: "default",
                     },
-                    {
-                        text: language === "HI" ? "कैमरा AR शुरू करें" : "Start Camera AR",
-                        onPress: () => router.push("/ar/fire")
-                    }
                 ]
             );
         }
@@ -80,7 +108,7 @@ export default function ARPreparationScreen() {
                         {prep.domainTitle || "Domain 1: Fire & Explosion Response"}
                     </Text>
                     <Text style={styles.domainSummary}>
-                        {prep.domainDesc || "Interactive training overlaid on physical surroundings via phone camera (Android 10+, no headset required)."}
+                        {prep.domainDesc || "Interactive 3D AR simulation for fire hazard response, extinguisher operation, and emergency exit routing."}
                     </Text>
 
                     <View style={styles.stepRow}>
@@ -117,20 +145,9 @@ export default function ARPreparationScreen() {
                     <Text style={styles.item}>✓ {prep.followSafety || "Follow PASS protocol and evacuation markers"}</Text>
                 </View>
 
-                {/* Primary Button: Camera AR */}
+                {/* Primary Action Button: START AR */}
                 <TouchableOpacity
                     style={styles.button}
-                    onPress={() => router.push("/ar/fire")}
-                    activeOpacity={0.85}
-                >
-                    <Text style={styles.buttonText}>
-                        {prep.start ? prep.start.toUpperCase() : "START CAMERA AR TRAINING"}
-                    </Text>
-                </TouchableOpacity>
-
-                {/* Secondary Option: Unity 3D AR */}
-                <TouchableOpacity
-                    style={[styles.button, styles.unityButton]}
                     onPress={handleLaunchUnity}
                     disabled={isLaunchingUnity}
                     activeOpacity={0.85}
@@ -138,8 +155,8 @@ export default function ARPreparationScreen() {
                     {isLaunchingUnity ? (
                         <ActivityIndicator color="#FFFFFF" />
                     ) : (
-                        <Text style={styles.unityButtonText}>
-                            🎮 {prep.startUnity ? prep.startUnity.toUpperCase() : "LAUNCH UNITY 3D AR EXPERIENCE"}
+                        <Text style={styles.buttonText}>
+                            {prep.start ? prep.start.toUpperCase() : "START AR"}
                         </Text>
                     )}
                 </TouchableOpacity>
