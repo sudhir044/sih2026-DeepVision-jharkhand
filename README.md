@@ -127,7 +127,7 @@ PDF + QR verification
 
 [Watch Demo Video]
 
-[Download APK]
+[https://github.com/sudhir044/sih2026-DeepVision-jharkhand/releases/tag/v1.0.0]
 
 [Live Admin Dashboard]
 
