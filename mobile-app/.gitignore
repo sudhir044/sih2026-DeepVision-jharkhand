@@ -49,3 +49,5 @@ example
 /android/local.properties
 /android/unityLibrary/src/main/Il2CppOutputProject/
 /android/unityLibrary/src/main/jniStaticLibs/
+
+*.keystore

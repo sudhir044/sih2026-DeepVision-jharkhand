@@ -52,3 +52,5 @@ ios/build/
 # Secrets
 *.pem
 *.key
+*.keystore
+*.jks

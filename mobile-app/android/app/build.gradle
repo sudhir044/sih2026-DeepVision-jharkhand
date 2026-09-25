@@ -95,6 +95,14 @@ android {
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
+    def localProperties = new Properties()
+    def localPropertiesFile = rootProject.file('local.properties')
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.withReader('UTF-8') { reader ->
+            localProperties.load(reader)
+        }
+    }
+
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -102,15 +110,36 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            def keystoreFile = System.getenv('DEEPVISION_KEYSTORE_FILE') ?: findProperty('DEEPVISION_KEYSTORE_FILE') ?: localProperties.getProperty('DEEPVISION_KEYSTORE_FILE')
+            def keystorePassword = System.getenv('DEEPVISION_KEYSTORE_PASSWORD') ?: findProperty('DEEPVISION_KEYSTORE_PASSWORD') ?: localProperties.getProperty('DEEPVISION_KEYSTORE_PASSWORD')
+            def keyAliasVal = System.getenv('DEEPVISION_KEY_ALIAS') ?: findProperty('DEEPVISION_KEY_ALIAS') ?: localProperties.getProperty('DEEPVISION_KEY_ALIAS')
+            def keyPasswordVal = System.getenv('DEEPVISION_KEY_PASSWORD') ?: findProperty('DEEPVISION_KEY_PASSWORD') ?: localProperties.getProperty('DEEPVISION_KEY_PASSWORD')
+
+            if (keystoreFile) {
+                def kFile = file(keystoreFile)
+                if (!kFile.exists()) {
+                    kFile = rootProject.file(keystoreFile)
+                }
+                if (kFile.exists()) {
+                    storeFile kFile
+                    storePassword keystorePassword
+                    keyAlias keyAliasVal
+                    keyPassword keyPasswordVal
+                }
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            } else {
+                signingConfig signingConfigs.debug
+            }
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources enableShrinkResources.toBoolean()
             minifyEnabled enableMinifyInReleaseBuilds
