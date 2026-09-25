@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { router } from "expo-router";
 import { useLanguage } from "../i18n/LanguageContext";
@@ -49,7 +49,7 @@ export default function BottomNavBar({ activeTab = "home" }: BottomNavBarProps) 
               activeTab === "home" && styles.labelActive,
             ]}
           >
-            {t.home.navHome || "Home"}
+            {t?.home?.navHome || "Home"}
           </Text>
         </TouchableOpacity>
 
@@ -71,7 +71,7 @@ export default function BottomNavBar({ activeTab = "home" }: BottomNavBarProps) 
                 activeTab === "training" && styles.iconActive,
               ]}
             >
-              🎓
+              🎯
             </Text>
           </View>
           <Text
@@ -80,7 +80,7 @@ export default function BottomNavBar({ activeTab = "home" }: BottomNavBarProps) 
               activeTab === "training" && styles.labelActive,
             ]}
           >
-            {t.home.navTraining || "Training"}
+            {t?.home?.navTraining || "Training"}
           </Text>
         </TouchableOpacity>
 
@@ -111,7 +111,7 @@ export default function BottomNavBar({ activeTab = "home" }: BottomNavBarProps) 
               activeTab === "assessment" && styles.labelActive,
             ]}
           >
-            {t.home.navAssessment || "Assessment"}
+            {t?.home?.navAssessment || "Assessment"}
           </Text>
         </TouchableOpacity>
 
@@ -142,7 +142,7 @@ export default function BottomNavBar({ activeTab = "home" }: BottomNavBarProps) 
               activeTab === "certificate" && styles.labelActive,
             ]}
           >
-            {t.home.navCertificate || "Certificates"}
+            {t?.home?.navCertificate || "Certificates"}
           </Text>
         </TouchableOpacity>
       </View>

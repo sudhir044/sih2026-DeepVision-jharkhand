@@ -27,16 +27,5 @@ allprojects {
   }
 }
 
-
-
 apply plugin: "expo-root-project"
 apply plugin: "com.facebook.react.rootproject"
-
-subprojects { subproject ->
-    if (subproject.projectDir.absolutePath.contains("${File.separator}node_modules${File.separator}")) {
-        subproject.buildDir = new File(
-            rootProject.projectDir,
-            "build/node_modules/${subproject.name}"
-        )
-    }
-}

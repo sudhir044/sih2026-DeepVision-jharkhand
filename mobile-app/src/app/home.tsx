@@ -1,4 +1,4 @@
-import {
+﻿import {
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -31,7 +31,6 @@ export default function HomeScreen() {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
             >
-
                 {/* Header */}
                 <View style={styles.header}>
                     <View>
@@ -91,7 +90,7 @@ export default function HomeScreen() {
                                         styles.languageActiveText,
                                 ]}
                             >
-                                हिंदी
+                                हिन्दी
                             </Text>
                         </TouchableOpacity>
 
@@ -109,7 +108,7 @@ export default function HomeScreen() {
                                         styles.languageActiveText,
                                 ]}
                             >
-                                संताली
+                                ᱥᱟᱱᱛᱟᱲᱤ
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -164,7 +163,7 @@ export default function HomeScreen() {
                     onPress={() => router.push("/module/gas")}
                 >
                     <View style={styles.iconBox}>
-                        <Text style={styles.icon}>☣</Text>
+                        <Text style={styles.icon}>⚠️</Text>
                     </View>
 
                     <View style={styles.moduleInfo}>
@@ -184,17 +183,6 @@ export default function HomeScreen() {
                     </View>
                 </TouchableOpacity>
 
-                {/* Certificates */}
-                <Text style={styles.sectionTitle}>{t?.home?.certificates || "Certificates"}</Text>
-
-                <View style={styles.emptyCard}>
-                    <Text style={styles.emptyIcon}>🏆</Text>
-                    <Text style={styles.emptyTitle}>{t?.home?.noCertificates || "No Certificates Yet"}</Text>
-                    <Text style={styles.emptyText}>
-                        Complete a training module to earn your certificate.
-                    </Text>
-                </View>
-
                 {/* Training Hub Quick Access Section */}
                 <Text style={styles.sectionTitle}>{t?.home?.quickActions || "Quick Actions"}</Text>
 
@@ -205,7 +193,7 @@ export default function HomeScreen() {
                         onPress={() => router.push("/module/fire")}
                     >
                         <View style={[styles.quickIconBox, { backgroundColor: "#2A1805" }]}>
-                            <Text style={styles.quickIcon}>🎓</Text>
+                            <Text style={styles.quickIcon}>🎯</Text>
                         </View>
                         <View style={styles.quickTextContainer}>
                             <Text style={styles.quickCardTitle}>{t?.home?.learnTrainingBtn || "Start AR Training"}</Text>
@@ -240,6 +228,21 @@ export default function HomeScreen() {
                         <View style={styles.quickTextContainer}>
                             <Text style={styles.quickCardTitle}>{t?.home?.certificateBtn || "My Certificates"}</Text>
                             <Text style={styles.quickCardDesc}>{t?.home?.certificateDesc || "View and download earned badges"}</Text>
+                        </View>
+                        <Text style={styles.quickArrow}>→</Text>
+                    </TouchableOpacity>
+
+                    {/* QR Verification Button */}
+                    <TouchableOpacity
+                        style={styles.quickCard}
+                        onPress={() => router.push("/qr-verify")}
+                    >
+                        <View style={[styles.quickIconBox, { backgroundColor: "#0F2936" }]}>
+                            <Text style={styles.quickIcon}>🔍</Text>
+                        </View>
+                        <View style={styles.quickTextContainer}>
+                            <Text style={styles.quickCardTitle}>Verify Certificate QR</Text>
+                            <Text style={styles.quickCardDesc}>Scan or enter code to verify authentic credentials</Text>
                         </View>
                         <Text style={styles.quickArrow}>→</Text>
                     </TouchableOpacity>
@@ -448,34 +451,6 @@ const styles = StyleSheet.create({
 
     dot: {
         color: "#555",
-    },
-
-    emptyCard: {
-        backgroundColor: "#101212",
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#252525",
-        padding: 25,
-        alignItems: "center",
-        marginBottom: 30,
-    },
-
-    emptyIcon: {
-        fontSize: 30,
-        marginBottom: 10,
-    },
-
-    emptyTitle: {
-        color: "#fff",
-        fontSize: 15,
-        fontWeight: "600",
-    },
-
-    emptyText: {
-        color: "#777",
-        fontSize: 12,
-        textAlign: "center",
-        marginTop: 5,
     },
 
     quickGrid: {

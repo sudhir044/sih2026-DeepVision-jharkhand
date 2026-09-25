@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import {
     StyleSheet,
     Text,
@@ -59,7 +59,7 @@ export default function ARPreparationScreen() {
             Alert.alert(
                 language === "HI" ? "AR सिमुलेशन स्थिति" : "AR Simulation Status",
                 language === "HI"
-                    ? (result.error || "AR मॉड्यूल इस डिवाइस पर शुरू नहीं हो सका। कृपया पुनः प्रयास करें।")
+                    ? (result.error || "AR सिमुलेशन शुरू नहीं हो सका। कृपया पुनः प्रयास करें।")
                     : `${result.error || "AR simulation could not be started. Please try again."}`,
                 [
                     {
@@ -88,7 +88,7 @@ export default function ARPreparationScreen() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.arIcon}>◉</Text>
+                <Text style={styles.arIcon}>🎯</Text>
 
                 <Text style={styles.title}>
                     {prep.title || "Prepare for AR Training"}
@@ -114,21 +114,21 @@ export default function ARPreparationScreen() {
                     <View style={styles.stepRow}>
                         <View style={styles.stepBadge}><Text style={styles.stepNum}>1</Text></View>
                         <Text style={styles.stepText}>
-                            {language === "HI" ? "P-A-S-S अग्निशामक उपयोग प्रोटोकॉल" : "Extinguisher Operation (PASS Protocol)"}
+                            {language === "HI" ? "P-A-S-S अग्निशामक संचालन प्रोटोकॉल" : "Extinguisher Operation (PASS Protocol)"}
                         </Text>
                     </View>
 
                     <View style={styles.stepRow}>
                         <View style={styles.stepBadge}><Text style={styles.stepNum}>2</Text></View>
                         <Text style={styles.stepText}>
-                            {language === "HI" ? "आपातकालीन निकास पहचान और नेविगेशन" : "Emergency Exit Identification & Wayfinding"}
+                            {language === "HI" ? "आपातकालीन निकास पहचान एवं मार्ग दर्शन" : "Emergency Exit Identification & Wayfinding"}
                         </Text>
                     </View>
 
                     <View style={styles.stepRow}>
                         <View style={styles.stepBadge}><Text style={styles.stepNum}>3</Text></View>
                         <Text style={styles.stepText}>
-                            {language === "HI" ? "धुआं परत बचाव और सुरक्षित निकासी अनुक्रमण" : "Smoke Hazard Avoidance & Safe Evacuation Sequencing"}
+                            {language === "HI" ? "धुआं संकट परिहार एवं सुरक्षित निकासी" : "Smoke Hazard Avoidance & Safe Evacuation Sequencing"}
                         </Text>
                     </View>
                 </View>
@@ -136,7 +136,7 @@ export default function ARPreparationScreen() {
                 {/* Pre-training Checklist */}
                 <View style={[styles.card, { marginTop: 14 }]}>
                     <Text style={styles.cardTitle}>
-                        {language === "HI" ? "शुरू करने से पहले जांच" : "Before You Begin"}
+                        {language === "HI" ? "प्रारंभ करने से पूर्व" : "Before You Begin"}
                     </Text>
 
                     <Text style={styles.item}>✓ {prep.lightingCheck || "Ensure good lighting on work floor"}</Text>
@@ -168,7 +168,7 @@ export default function ARPreparationScreen() {
                     activeOpacity={0.85}
                 >
                     <Text style={styles.secondaryButtonText}>
-                        {language === "HI" ? "मूल्यांकन पर जाएँ →" : "PROCEED TO ASSESSMENT →"}
+                        {language === "HI" ? "मूल्यांकन पर जाएं →" : "PROCEED TO ASSESSMENT →"}
                     </Text>
                 </TouchableOpacity>
             </ScrollView>

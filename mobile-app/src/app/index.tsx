@@ -1,4 +1,4 @@
-import {
+﻿import {
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -60,7 +60,7 @@ export default function HeroScreen() {
                   language === "HI" && styles.languageActiveText,
                 ]}
               >
-                हिंदी
+                हिन्दी
               </Text>
             </TouchableOpacity>
 
@@ -77,7 +77,7 @@ export default function HeroScreen() {
                   language === "SAT" && styles.languageActiveText,
                 ]}
               >
-                संताली
+                ᱥᱟᱱᱛᱟᱲᱤ
               </Text>
             </TouchableOpacity>
           </View>
@@ -105,32 +105,32 @@ export default function HeroScreen() {
         {/* Feature Cards */}
         <View style={styles.features}>
           <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>◉</Text>
+            <Text style={styles.featureIcon}>🎯</Text>
             <Text style={styles.featureTitle}>
               AR Training
             </Text>
             <Text style={styles.featureText}>
-              Practice real workplace safety scenarios.
+              Practice real workplace safety scenarios in 3D AR.
             </Text>
           </View>
 
           <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>✓</Text>
+            <Text style={styles.featureIcon}>📝</Text>
             <Text style={styles.featureTitle}>
               Assessments
             </Text>
             <Text style={styles.featureText}>
-              Test your safety knowledge and actions.
+              Test your safety knowledge and practical actions.
             </Text>
           </View>
 
           <View style={styles.featureCard}>
-            <Text style={styles.featureIcon}>▣</Text>
+            <Text style={styles.featureIcon}>🏆</Text>
             <Text style={styles.featureTitle}>
               Certification
             </Text>
             <Text style={styles.featureText}>
-              Earn verifiable digital certificates.
+              Earn verifiable digital certificates with QR codes.
             </Text>
           </View>
         </View>
